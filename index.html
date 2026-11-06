@@ -3,32 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Abertura | Mairiporã Agro</title>
+    <title>Painel de Faturamento | Pix Puro</title>
     <style>
         body { margin: 0; padding: 20px; background-color: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; box-sizing: border-box; }
-        .card-portal { background-color: #ffffff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); max-width: 360px; width: 100%; text-align: center; box-sizing: border-box; border-top: 5px solid #0d47a1; }
-        .logo-txt { font-size: 18px; font-weight: 800; color: #0d47a1; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px; }
-        .status-txt { font-size: 13px; color: #64748b; font-weight: 500; margin-bottom: 25px; }
-        .btn-acesso { display: block; width: 100%; padding: 14px; font-size: 13px; font-weight: 700; background-color: #0d47a1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; box-sizing: border-box; transition: background 0.2s; }
-        .btn-acesso:hover { background-color: #0a3980; }
-        .rodape { margin-top: 25px; font-size: 10px; color: #94a3b8; font-family: monospace; letter-spacing: 0.5px; }
+        .container { background-color: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); max-width: 380px; width: 100%; box-sizing: border-box; border-top: 5px solid #0d47a1; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 16px; font-weight: 800; color: #0d47a1; margin: 0 0 5px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .header p { font-size: 11px; color: #64748b; margin: 0; font-weight: 500; }
+        .destino-box { background-color: #eff6ff; padding: 12px; border-radius: 8px; border: 1px dashed #bfdbfe; font-size: 11px; color: #1e40af; font-weight: 600; text-align: center; margin-bottom: 20px; }
+        .campo-grupo { margin-bottom: 15px; width: 100%; text-align: left; }
+        .campo-grupo label { display: block; font-size: 11px; font-weight: 700; color: #334155; margin-bottom: 6px; text-transform: uppercase; }
+        .campo-grupo input { width: 100%; padding: 12px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: #f8fafc; color: #1e293b; box-sizing: border-box; font-weight: 500; }
+        .botoes-linha { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 14px; font-size: 12px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-limpar { background-color: #e2e8f0; color: #475569; }
+        .btn-gerar { background-color: #0d47a1; color: #ffffff; }
+        .bloco-copia-rapido { margin-top: 20px; padding-top: 15px; border-top: 2px dashed #e2e8f0; display: none; width: 100%; }
+        .txt-aviso { font-size: 11px; color: #475569; font-weight: bold; text-align: left; margin-bottom: 6px; }
+        .input-payload { width: 100%; padding: 10px; font-size: 11px; font-family: monospace; border: 1px solid #cbd5e1; border-radius: 6px; background-color: #f1f5f9; color: #334155; text-align: center; box-sizing: border-box; margin-bottom: 8px; }
+        .btn-copiar-action { width: 100%; padding: 12px; font-size: 12px; font-weight: bold; background-color: #0284c7; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; }
+        .rodape-software { margin-top: 20px; font-size: 10px; color: #94a3b8; font-family: monospace; letter-spacing: 0.5px; text-align: center; }
     </style>
-    <script>
-        // Executa o redirecionamento automático instantâneo para o site da Maquininha
-        window.location.href = "https://jcsuguimoto.com.br";
-    </script>
 </head>
 <body>
-
-    <div class="card-portal">
-        <div class="logo-txt">Mairiporã Agro</div>
-        <div class="status-txt">Conectando ao sistema de faturamento...</div>
-        
-        <!-- Botão reserva caso o redirecionamento automático falte -->
-        <a href="https://jcsuguimoto.com.br" class="btn-acesso">Acessar Maquininha ➡️</a>
-        
-        <div class="rodape">JCS_software . versao 31.10.26.06</div>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Liquidação Real BCB Timed</h1>
+            <p>Ferramenta de Pagamento · Sem taxas embutidas</p>
+        </div>
+        <div class="destino-box">Destino: Mairiporã Agro — José Carlos Suguimoto</div>
+        <div class="campo-grupo">
+            <label>Valor do Faturamento (R$)</label>
+            <input type="number" id="valorFaturamento" step="0.01" placeholder="0,00" oninput="calcularStringPixInline()">
+        </div>
+        <div class="campo-grupo">
+            <label>Identificador da Venda (TXID)</label>
+            <input type="text" id="txidVenda" value="***" oninput="calcularStringPixInline()">
+        </div>
+        <div class="botoes-linha">
+            <button class="btn btn-limpar" onclick="limparPainel()">Limpar</button>
+            <button class="btn btn-gerar" onclick="irParaTelaDoQRCode()">Ver QR Code ➡️</button>
+        </div>
+        <div class="bloco-copia-rapido" id="areaCopiaRapida">
+            <div class="txt-aviso">Ou pague com o Copia e Cola:</div>
+            <input type="text" id="stringGerada" class="input-payload" readonly>
+            <button class="btn-copiar-action" onclick="copiarCodigoRapido()">📋 Copiar Código Pix</button>
+        </div>
+        <div class="rodape-software">JCS_software . versao 31.10.26.06</div>
     </div>
-
+    <script>
+        var CHAVE_FIXA = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
+        function calcularStringPixInline() {
+            var vf = document.getElementById("valorFaturamento").value;
+            var tx = document.getElementById("txidVenda").value || "***";
+            var areaCopia = document.getElementById("areaCopiaRapida");
+            if(!vf || parseFloat(vf) <= 0) { areaCopia.style.display = "none"; return; }
+            var valorInalterado = parseFloat(vf).toFixed(2);
+            var bChave = "0136" + CHAVE_FIXA;
+            var bGui = "0014br.gov.bcb.pix" + bChave;
+            var bConta = "26" + String(bGui.length).padStart(2, '0') + bGui;
+            var bValor = "54" + String(valorInalterado.length).padStart(2, '0') + valorInalterado;
+            var txIdLimpo = tx.replace(/[^a-zA-Z0-9]/g, '') || "***";
+            var bSub62 = "05" + String(txIdLimpo.length).padStart(2, '0') + txIdLimpo;
+            var bTxid = "62" + String(bSub62.length).padStart(2, '0') + bSub62;
+            var pLivre = "000201" + bConta + "520400005303986" + bValor + "5802BR5921JOSE CARLOS SUGUIMOTO6009MAIRIPORA" + bTxid + "6304";
+            var crc = 0xFFFF;
+            for (var c = 0; c < pLivre.length; c++) {
+                crc ^= pLivre.charCodeAt(c) << 8;
+                for (var i = 0; i < 8; i++) {
+                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+                    else crc = crc << 1;
+                }
+            }
+            var stringFinal = pLivre + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+            document.getElementById("stringGerada").value = stringFinal;
+            areaCopia.style.display = "block";
+        }
+        function irParaTelaDoQRCode() {
+            var vf = document.getElementById("valorFaturamento").value;
+            if(!vf || parseFloat(vf) <= 0) { alert("Digite um valor."); return; }
+            var tx = document.getElementById("txidVenda").value || "***";
+            window.location.href = "pix.html?v=" + vf + "&ch=" + encodeURIComponent(CHAVE_FIXA) + "&tx=" + encodeURIComponent(tx);
+        }
+        function copiarCodigoRapido() {
+            var campo = document.getElementById("stringGerada");
+            campo.select();
+            campo.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(campo.value);
+            alert("✅ Código Pix copiado com sucesso!");
+        }
+        function limparPainel() {
+            document.getElementById("valorFaturamento").value = "";
+            document.getElementById("areaCopiaRapida").style.display = "none";
+        }
+    </script>
 </body>
 </html>
