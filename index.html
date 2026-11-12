@@ -436,8 +436,7 @@
             document.getElementById("view-tipo").innerText = TIPO_CHAVE;
 
             codigoPixGerado = montarPayloadPix(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA, vf, tx);
-
-            QREncoder.renderToCanvas(document.getElementById("canvasQr"), codigoPixGerado);
+            desenharQrBlindado(document.getElementById("canvasQr"), codigoPixGerado);
         };
     </script>
 </body>
