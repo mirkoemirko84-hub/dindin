@@ -187,13 +187,9 @@
                 isFunc[8][size - 1 - i] = true;
             }
             setMod(size - 8, 8, 1, true);
-            }
-
-            for (var i = 0; i < 9; i++) if (i !== 6) { isFunc[8][i] = true; isFunc[i][8] = true; }
-            for (var i = 0; i < 8; i++) { isFunc[size - 1 - i][8] = true; isFunc[8][size - 1 - i] = true; }
-            setMod(size - 8, 8, 1, true);
 
             var allBits = new Array();
+
             for (var i = 0; i < finalBytes.length; i++) {
                 for (var b = 7; b >= 0; b--) allBits.push((finalBytes[i] >>> b) & 1);
             }
