@@ -1,36 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pix Universal - JCS Software</title>
-    <script src="https://cloudflare.com"></script>
-    <style>
-        body { margin: 0; padding: 20px; background-color: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; box-sizing: border-box; }
-        .container-pix { background-color: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); max-width: 360px; width: 100%; text-align: center; box-sizing: border-box; }
-        .indicador-tabular { font-size: 14px; font-weight: bold; color: #0d47a1; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .txt-valor { font-size: 22px; font-weight: 900; color: #16a34a; margin: 8px 0; text-transform: uppercase; }
-        .txt-destino { font-size: 13px; color: #475569; margin-bottom: 6px; font-weight: 700; }
-        .badge-tipo { display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px; }
-        .bloco-qrcode-real { display: flex; justify-content: center; align-items: center; background: #ffffff; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; width: 240px; height: 240px; margin: 12px auto; box-sizing: border-box; }
-        .bloco-qrcode-real svg { width: 210px; height: 210px; display: block; }
-        .btn-copiar { margin-top: 12px; padding: 14px 20px; font-size: 13px; font-weight: bold; background-color: #0d47a1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; }
-        .rodape-software { margin-top: 22px; font-size: 10px; color: #94a3b8; font-family: monospace; text-align: center; }
-    </style>
-</head>
-<body>
-    <div class="container-pix">
-        <div class="indicador-tabular">Aponte a Câmera do Banco ⬇️</div>
-        <div class="txt-valor">Digite o Valor no App</div>
-        <div class="txt-destino" id="view-destino">Destino: MAIRIPORA AGRO</div>
-        <div class="badge-tipo" id="view-tipo">CHAVE ALEATÓRIA</div>
-        
-        <div class="bloco-qrcode-real" id="boxQr"></div>
-
-        <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 12.11.26.08</div>
-    </div>
-
     <script>
         var codigoPixGerado = "";
 
@@ -91,16 +58,158 @@
             document.body.removeChild(temp);
             alert("Código Pix Universal copiado!");
         }
+        function desenharQrBlindado(texto) {
+            var EXP = new Array(256), LOG = new Array(256);
+            for (var i = 0; i < 8; i++) EXP[i] = 1 << i;
+            for (var i = 8; i < 256; i++) EXP[i] = EXP[i - 4] ^ EXP[i - 5] ^ EXP[i - 6] ^ EXP[i - 8];
+            for (var i = 0; i < 255; i++) LOG[EXP[i]] = i;
+
+            function gmul(a, b) { return (a === 0 || b === 0) ? 0 : EXP[(LOG[a] + LOG[b]) % 255]; }
+
+            function rsEncode(data, ecLen) {
+                var poly = new Array(1);
+                poly.fill(1);
+                for (var i = 0; i < ecLen; i++) {
+                    var next = new Array(poly.length + 1).fill(0);
+                    for (var j = 0; j < poly.length; j++) {
+                        next[j] ^= poly[j];
+                        next[j + 1] ^= gmul(poly[j], EXP[i]);
+                    }
+                    poly = next;
+                }
+                var res = data.slice().concat(new Array(ecLen).fill(0));
+                for (var i = 0; i < data.length; i++) {
+                    var coef = res[i];
+                    if (coef !== 0) {
+                        for (var j = 1; j < poly.length; j++) res[i + j] ^= gmul(poly[j], coef);
+                    }
+                }
+                return res.slice(data.length);
+            }
+
+            var size = 41, ecLen = 18, dataCap = 136;
+            var bytes = new Array();
+            for (var i = 0; i < texto.length; i++) bytes.push(texto.charCodeAt(i) & 0xFF);
+
+            var bits = new Array();
+            function pushBits(val, len) { for (var b = len - 1; b >= 0; b--) bits.push((val >>> b) & 1); }
+            pushBits(4, 4);
+            pushBits(bytes.length, 8);
+            for (var i = 0; i < bytes.length; i++) pushBits(bytes[i], 8);
+            for (var i = 0; i < 4 && bits.length < dataCap * 8; i++) bits.push(0);
+            while (bits.length % 8 !== 0) bits.push(0);
+
+            var cw = new Array();
+            for (var i = 0; i < bits.length; i += 8) {
+                var v = 0;
+                for (var j = 0; j < 8; j++) v = (v << 1) | bits[i + j];
+                cw.push(v);
+            }
+            var pToggle = 0;
+            while (cw.length < dataCap) { cw.push(pToggle === 0 ? 0xEC : 0x11); pToggle ^= 1; }
+
+            var b1 = cw.slice(0, 68), b2 = cw.slice(68, 136);
+            var e1 = rsEncode(b1, ecLen), e2 = rsEncode(b2, ecLen);
+            var finalBytes = new Array();
+            for (var i = 0; i < 68; i++) { finalBytes.push(b1[i]); finalBytes.push(b2[i]); }
+            for (var i = 0; i < ecLen; i++) { finalBytes.push(e1[i]); finalBytes.push(e2[i]); }
+
+            var grid = new Array(size * size).fill(0);
+            var isFunc = new Array(size * size).fill(false);
+
+            function setMod(r, c, v, f) {
+                if (r >= 0 && r < size && c >= 0 && c < size) {
+                    var idx = r * size + c;
+                    grid[idx] = v ? 1 : 0;
+                    if (f) isFunc[idx] = true;
+                }
+            }
+
+            function finder(r, c) {
+                for (var dr = -1; dr <= 7; dr++) {
+                    for (var dc = -1; dc <= 7; dc++) {
+                        var inB = dr >= 0 && dr <= 6 && dc >= 0 && dc <= 6;
+                        var edge = dr === 0 || dr === 6 || dc === 0 || dc === 6;
+                        var core = dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4;
+                        setMod(r + dr, c + dc, inB && (edge || core), true);
+                    }
+                }
+            }
+            finder(0, 0); finder(0, size - 7); finder(size - 7, 0);
+
+            var al = "6,34".split(",").map(Number);
+            for (var i = 0; i < al.length; i++) {
+                for (var j = 0; j < al.length; j++) {
+                    var ar = al[i], ac = al[j];
+                    if (isFunc[ar * size + ac]) continue;
+                    for (var dr = -2; dr <= 2; dr++) {
+                        for (var dc = -2; dc <= 2; dc++) {
+                            setMod(ar + dr, ac + dc, Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0), true);
+                        }
+                    }
+                }
+            }
+
+            for (var i = 8; i < size - 8; i++) {
+                if (!isFunc[6 * size + i]) setMod(6, i, i % 2 === 0, true);
+                if (!isFunc[i * size + 6]) setMod(i, 6, i % 2 === 0, true);
+            }
+
+            for (var i = 0; i < 9; i++) {
+                if (i !== 6) { isFunc[8 * size + i] = true; isFunc[i * size + 8] = true; }
+            }
+            for (var i = 0; i < 8; i++) {
+                isFunc[(size - 1 - i) * size + 8] = true;
+                isFunc[8 * size + (size - 1 - i)] = true;
+            }
+            setMod(size - 8, 8, 1, true);
+
+            var allBits = new Array();
+            for (var i = 0; i < finalBytes.length; i++) {
+                for (var b = 7; b >= 0; b--) allBits.push((finalBytes[i] >>> b) & 1);
+            }
+
+            var bIdx = 0, up = true;
+            for (var col = size - 1; col >= 1; col -= 2) {
+                if (col === 6) col--;
+                for (var step = 0; step < size; step++) {
+                    var r = up ? (size - 1 - step) : step;
+                    for (var dx = 0; dx < 2; dx++) {
+                        var c = col - dx;
+                        var idx = r * size + c;
+                        if (!isFunc[idx]) {
+                            var bit = bIdx < allBits.length ? allBits[bIdx++] : 0;
+                            if ((r + c) % 2 === 0) bit ^= 1;
+                            grid[idx] = bit;
+                        }
+                    }
+                }
+                up = !up;
+            }
+
+            var fmt = 0x77C4;
+            var f1 = "8-0,8-1,8-2,8-3,8-4,8-5,8-7,8-8,7-8,5-8,4-8,3-8,2-8,1-8,0-8".split(",");
+            var f2 = "40-8,39-8,38-8,37-8,36-8,35-8,34-8,8-33,8-34,8-35,8-36,8-37,8-38,8-39,8-40".split(",");
+            for (var i = 0; i < 15; i++) {
+                var bit = (fmt >>> (14 - i)) & 1;
+                var p1 = f1[i].split("-"), p2 = f2[i].split("-");
+                grid[Number(p1[0]) * size + Number(p1[1])] = bit;
+                grid[Number(p2[0]) * size + Number(p2[1])] = bit;
+            }
+
+            var rects = "";
+            for (var r = 0; r < size; r++) {
+                for (var c = 0; c < size; c++) {
+                    if (grid[r * size + c] === 1) rects += '<rect x="' + (c + 2) + '" y="' + (r + 2) + '" width="1" height="1"/>';
+                }
+            }
+            return '<svg xmlns="http://w3.org" viewBox="0 0 45 45" width="210" height="210" shape-rendering="crispEdges"><rect width="45" height="45" fill="#ffffff"/><g fill="#000000">' + rects + '</g></svg>';
+        }
 
         window.onload = function() {
             document.getElementById("view-tipo").innerText = TIPO_CHAVE;
             codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
-
-            // Gera o QR Code vetorial oficial em 4 linhas limpas
-            var qr = qrcode(0, 'M');
-            qr.addData(codigoPixGerado);
-            qr.make();
-            document.getElementById("boxQr").innerHTML = qr.createSvgTag({ scalable: true });
+            document.getElementById("boxQr").innerHTML = desenharQrBlindado(codigoPixGerado);
         };
     </script>
 </body>
