@@ -3,35 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Código de Pagamento Oficial BCB</title>
+    <title>Pix Universal - JCS Software</title>
     <style>
         body { margin: 0; padding: 20px; background-color: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; box-sizing: border-box; }
         .container-pix { background-color: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); max-width: 360px; width: 100%; text-align: center; box-sizing: border-box; }
-        .indicador-tabular { font-size: 14px; font-weight: bold; color: #0d47a1; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .txt-valor { font-size: 28px; font-weight: 900; color: #1e293b; margin: 10px 0; }
-        .txt-destino { font-size: 12px; color: #64748b; margin-bottom: 5px; font-weight: 600; }
-        .badge-tipo { display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 12px; margin-bottom: 10px; }
-        .bloco-qrcode-real { display: flex; justify-content: center; align-items: center; background: #ffffff; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; width: 240px; height: 240px; margin: 15px auto; box-sizing: border-box; }
-        .bloco-qrcode-real canvas { width: 210px !important; height: 210px !important; display: block; image-rendering: pixelated; }
-        .btn-copiar { margin-top: 10px; padding: 14px 20px; font-size: 12px; font-weight: bold; background-color: #0d47a1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; }
-        .btn-voltar { margin-top: 10px; padding: 14px 20px; font-size: 12px; font-weight: bold; background-color: #cc092f; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; }
-        .rodape-software { margin-top: 25px; font-size: 10px; color: #94a3b8; font-family: monospace; text-align: center; }
+        .indicador-tabular { font-size: 14px; font-weight: bold; color: #0d47a1; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .txt-valor { font-size: 22px; font-weight: 900; color: #16a34a; margin: 8px 0; text-transform: uppercase; }
+        .txt-destino { font-size: 13px; color: #475569; margin-bottom: 6px; font-weight: 700; }
+        .badge-tipo { display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px; }
+        .bloco-qrcode-real { display: flex; justify-content: center; align-items: center; background: #ffffff; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; width: 240px; height: 240px; margin: 12px auto; box-sizing: border-box; }
+        .bloco-qrcode-real img { width: 210px; height: 210px; display: block; image-rendering: pixelated; }
+        .btn-copiar { margin-top: 12px; padding: 14px 20px; font-size: 13px; font-weight: bold; background-color: #0d47a1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; }
+        .rodape-software { margin-top: 22px; font-size: 10px; color: #94a3b8; font-family: monospace; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container-pix">
         <div class="indicador-tabular">Aponte a Câmera do Banco ⬇️</div>
-        <div class="txt-valor" id="view-valor">R$ 0,25</div>
+        <div class="txt-valor">Digite o Valor no App</div>
         <div class="txt-destino" id="view-destino">Destino: MAIRIPORA AGRO</div>
         <div class="badge-tipo" id="view-tipo">CHAVE ALEATÓRIA</div>
         
-        <div class="bloco-qrcode-real">
-            <canvas id="canvasQr"></canvas>
-        </div>
+        <div class="bloco-qrcode-real" id="boxQr"></div>
 
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <button class="btn-voltar" onclick="window.location.href='index.html'">⬅️ Nova Cobrança</button>
-        <div class="rodape-software">JCS_software . versao 12.11.26.04</div>
+        <div class="rodape-software">JCS_software . versao 12.11.26.06</div>
     </div>
 
     <script>
@@ -44,48 +40,44 @@
         // --- OPÇÃO 1: CHAVE ALEATÓRIA (ATIVA NO MOMENTO) ---
         var TIPO_CHAVE  = "CHAVE ALEATÓRIA";
         var CHAVE_PIX   = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
-        var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";       // Máx 25 letras, SEM ACENTOS
-        var CIDADE_LOJA = "MAIRIPORA";                   // Máx 15 letras, SEM ACENTOS
+        var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
+        var CIDADE_LOJA = "MAIRIPORA";
 
         // --- OPÇÃO 2: CHAVE CPF (ISOLADA COM CERQUINHA ###) ---
         // ### var TIPO_CHAVE  = "CHAVE CPF";
-        // ### var CHAVE_PIX   = "00000000000";          // Apenas os 11 números
+        // ### var CHAVE_PIX   = "00000000000";
         // ### var NOME_LOJA   = "NOME DO RECEBEDOR";
         // ### var CIDADE_LOJA = "MAIRIPORA";
 
         // --- OPÇÃO 3: CHAVE CNPJ (ISOLADA COM CERQUINHA ###) ---
         // ### var TIPO_CHAVE  = "CHAVE CNPJ";
-        // ### var CHAVE_PIX   = "00000000000000";       // Apenas os 14 números
+        // ### var CHAVE_PIX   = "00000000000000";
         // ### var NOME_LOJA   = "NOME DA EMPRESA";
         // ### var CIDADE_LOJA = "MAIRIPORA";
 
         // --- OPÇÃO 4: CHAVE E-MAIL (ISOLADA COM CERQUINHA ###) ---
         // ### var TIPO_CHAVE  = "CHAVE E-MAIL";
-        // ### var CHAVE_PIX   = "contato@exemplo.com.br"; // Tudo em minúsculo
+        // ### var CHAVE_PIX   = "contato@exemplo.com.br";
         // ### var NOME_LOJA   = "NOME DO RECEBEDOR";
         // ### var CIDADE_LOJA = "MAIRIPORA";
 
         // =========================================================================
-        // MOTOR OFICIAL PIX BCB (EMV / BR CODE + CRC16)
+        // MOTOR OFICIAL PIX UNIVERSAL (SEM CAMPO 54 = VALOR LIVRE NO APP DO BANCO)
         // =========================================================================
-        function montarPayloadPix(chave, nome, cidade, valorFloat, txid) {
+        function montarPixUniversal(chave, nome, cidade) {
             var chLimpa = chave.trim();
             var nomeLimpo = nome.toUpperCase().substring(0, 25);
             var cidadeLimpa = cidade.toUpperCase().substring(0, 15);
-            var valorStr = parseFloat(valorFloat).toFixed(2);
-            var txIdLimpo = txid ? txid.replace(/[^a-zA-Z0-9]/g, '').substring(0, 25) : "***";
 
             var gui = "0014br.gov.bcb.pix";
             var campoChave = "01" + String(chLimpa.length).padStart(2, '0') + chLimpa;
             var conteudo26 = gui + campoChave;
             var bloco26 = "26" + String(conteudo26.length).padStart(2, '0') + conteudo26;
-            var bloco54 = "54" + String(valorStr.length).padStart(2, '0') + valorStr;
             var bloco59 = "59" + String(nomeLimpo.length).padStart(2, '0') + nomeLimpo;
             var bloco60 = "60" + String(cidadeLimpa.length).padStart(2, '0') + cidadeLimpa;
-            var sub05 = "05" + String(txIdLimpo.length).padStart(2, '0') + txIdLimpo;
-            var bloco62 = "62" + String(sub05.length).padStart(2, '0') + sub05;
+            var bloco62 = "62070503***";
 
-            var payloadSemCrc = "000201" + bloco26 + "52040000" + "5303986" + bloco54 + "5802BR" + bloco59 + bloco60 + bloco62 + "6304";
+            var payloadSemCrc = "000201" + bloco26 + "52040000" + "5303986" + "5802BR" + bloco59 + bloco60 + bloco62 + "6304";
 
             var crc = 0xFFFF;
             for (var c = 0; c < payloadSemCrc.length; c++) {
@@ -98,345 +90,23 @@
             var crcHex = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
             return payloadSemCrc + crcHex;
         }
-        // =========================================================================
-        // GERADOR DE MATRIZ QR CODE OFICIAL (ISO/IEC 18004) 100% INTERNO
-        // =========================================================================
-        var QREncoder = (function() {
-            var EXP = new Array(256), LOG = new Array(256);
-            for (var i = 0; i < 8; i++) EXP[i] = 1 << i;
-            for (var i = 8; i < 256; i++) EXP[i] = EXP[i - 4] ^ EXP[i - 5] ^ EXP[i - 6] ^ EXP[i - 8];
-            for (var i = 0; i < 255; i++) LOG[EXP[i]] = i;
-
-            function gmul(a, b) {
-                if (a === 0 || b === 0) return 0;
-                return EXP[(LOG[a] + LOG[b]) % 255];
-            }
-
-            function rsGenPoly(ecLen) {
-                var poly =;
-                for (var i = 0; i < ecLen; i++) {
-                    var next = new Array(poly.length + 1).fill(0);
-                    var factor = EXP[i];
-                    for (var j = 0; j < poly.length; j++) {
-                        next[j] ^= poly[j];
-                        next[j + 1] ^= gmul(poly[j], factor);
-                    }
-                    poly = next;
-                }
-                return poly;
-            }
-
-            function rsEncode(data, ecLen) {
-                var gen = rsGenPoly(ecLen);
-                var res = data.slice().concat(new Array(ecLen).fill(0));
-                for (var i = 0; i < data.length; i++) {
-                    var coef = res[i];
-                    if (coef !== 0) {
-                        for (var j = 1; j < gen.length; j++) {
-                            res[i + j] ^= gmul(gen[j], coef);
-                        }
-                    }
-                }
-                return res.slice(data.length);
-            }
-
-            var VERSIONS = [
-                null,
-                { size: 21, total: 26,  ec: 7,  blocks: 1, align: [] },
-                { size: 25, total: 44,  ec: 10, blocks: 1, align: [6, 18] },
-                { size: 29, total: 70,  ec: 15, blocks: 1, align: [6, 22] },
-                { size: 33, total: 100, ec: 20, blocks: 1, align: [6, 26] },
-                { size: 37, total: 134, ec: 26, blocks: 1, align: [6, 30] },
-                { size: 41, total: 172, ec: 18, blocks: 2, align: [6, 34] },
-                { size: 45, total: 196, ec: 20, blocks: 2, align: [6, 22, 38] },
-                { size: 49, total: 242, ec: 24, blocks: 2, align: [6, 24, 42] },
-                { size: 53, total: 292, ec: 30, blocks: 2, align: [6, 26, 46] },
-                { size: 57, total: 346, ec: 18, blocks: 4, align: [6, 28, 50] }
-            ];
-
-            function makeQR(text) {
-                var bytes = [];
-                for (var i = 0; i < text.length; i++) bytes.push(text.charCodeAt(i) & 0xFF);
-
-                var ver = 1;
-                for (var v = 1; v <= 10; v++) {
-                    var info = VERSIONS[v];
-                    var dataCap = info.total - info.ec * info.blocks;
-                    var headerBits = (v <= 9) ? 12 : 20;
-                    if (bytes.length * 8 + headerBits <= dataCap * 8) { ver = v; break; }
-                }
-
-                var info = VERSIONS[ver];
-                var size = info.size;
-                var dataCap = info.total - info.ec * info.blocks;
-
-                var bits = [];
-                function pushBits(val, len) {
-                    for (var b = len - 1; b >= 0; b--) bits.push((val >>> b) & 1);
-                }
-
-                pushBits(4, 4);
-                pushBits(bytes.length, ver <= 9 ? 8 : 16);
-                for (var i = 0; i < bytes.length; i++) pushBits(bytes[i], 8);
-
-                var maxBits = dataCap * 8;
-                for (var i = 0; i < 4 && bits.length < maxBits; i++) bits.push(0);
-                while (bits.length % 8 !== 0) bits.push(0);
-
-                var codewords = [];
-                for (var i = 0; i < bits.length; i += 8) {
-                    var cw = 0;
-                    for (var j = 0; j < 8; j++) cw = (cw << 1) | bits[i + j];
-                    codewords.push(cw);
-                }
-                var pads = [0xEC, 0x11], pIdx = 0;
-                while (codewords.length < dataCap) { codewords.push(pads[pIdx]); pIdx ^= 1; }
-
-                var numBlocks = info.blocks;
-                var shortBlockLen = Math.floor(dataCap / numBlocks);
-                var longBlocks = dataCap % numBlocks;
-                var dataBlocks = [], ecBlocks = [], offset = 0;
-
-                for (var b = 0; b < numBlocks; b++) {
-                    var len = shortBlockLen + (b >= numBlocks - longBlocks ? 1 : 0);
-                    var block = codewords.slice(offset, offset + len);
-                    offset += len;
-                    dataBlocks.push(block);
-                    ecBlocks.push(rsEncode(block, info.ec));
-                }
-
-                var finalBytes = [];
-                var maxDataLen = shortBlockLen + (longBlocks > 0 ? 1 : 0);
-                for (var i = 0; i < maxDataLen; i++) {
-                    for (var b = 0; b < numBlocks; b++) {
-                        if (i < dataBlocks[b].length) finalBytes.push(dataBlocks[b][i]);
-                    }
-                }
-                for (var i = 0; i < info.ec; i++) {
-                    for (var b = 0; b < numBlocks; b++) finalBytes.push(ecBlocks[b][i]);
-                }
-
-                var grid = Array.from({ length: size }, function() { return new Array(size).fill(null); });
-                var isFunc = Array.from({ length: size }, function() { return new Array(size).fill(false); });
-
-                function setMod(r, c, val, func) {
-                    if (r >= 0 && r < size && c >= 0 && c < size) {
-                        grid[r][c] = val ? 1 : 0;
-                        if (func) isFunc[r][c] = true;
-                    }
-                }
-
-                function drawFinder(r, c) {
-                    for (var dr = -1; dr <= 7; dr++) {
-                        for (var dc = -1; dc <= 7; dc++) {
-                            var inBox = dr >= 0 && dr <= 6 && dc >= 0 && dc <= 6;
-                            var onEdge = dr === 0 || dr === 6 || dc === 0 || dc === 6;
-                            var inCore = dr >= 2 && dr <= 4 && dc >= 2 && dc <= 4;
-                            setMod(r + dr, c + dc, inBox && (onEdge || inCore), true);
-                        }
-                    }
-                }
-
-                drawFinder(0, 0);
-                drawFinder(0, size - 7);
-                drawFinder(size - 7, 0);
-
-                var al = info.align;
-                for (var i = 0; i < al.length; i++) {
-                    for (var j = 0; j < al.length; j++) {
-                        var ar = al[i], ac = al[j];
-                        if (isFunc[ar][ac]) continue;
-                        for (var dr = -2; dr <= 2; dr++) {
-                            for (var dc = -2; dc <= 2; dc++) {
-                                var v = Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0);
-                                setMod(ar + dr, ac + dc, v, true);
-                            }
-                        }
-                    }
-                }
-
-                for (var i = 8; i < size - 8; i++) {
-                    if (!isFunc[6][i]) setMod(6, i, i % 2 === 0, true);
-                    if (!isFunc[i][6]) setMod(i, 6, i % 2 === 0, true);
-                }
-
-                for (var i = 0; i < 9; i++) {
-                    if (i !== 6) { isFunc[8][i] = true; isFunc[i][8] = true; }
-                }
-                for (var i = 0; i < 8; i++) {
-                    isFunc[8][size - 1 - i] = true;
-                    isFunc[size - 1 - i][8] = true;
-                }
-                setMod(size - 8, 8, 1, true);
-
-                if (ver >= 7) {
-                    for (var i = 0; i < 6; i++) {
-                        for (var j = 0; j < 3; j++) {
-                            isFunc[i][size - 11 + j] = true;
-                            isFunc[size - 11 + j][i] = true;
-                        }
-                    }
-                }
-
-                var allBits = [];
-                for (var i = 0; i < finalBytes.length; i++) {
-                    for (var b = 7; b >= 0; b--) allBits.push((finalBytes[i] >>> b) & 1);
-                }
-
-                var bitIdx = 0, up = true;
-                for (var col = size - 1; col >= 1; col -= 2) {
-                    if (col === 6) col--;
-                    for (var step = 0; step < size; step++) {
-                        var r = up ? (size - 1 - step) : step;
-                        for (var dx = 0; dx < 2; dx++) {
-                            var c = col - dx;
-                            if (!isFunc[r][c]) {
-                                var bit = bitIdx < allBits.length ? allBits[bitIdx++] : 0;
-                                if ((r + c) % 2 === 0) bit ^= 1;
-                                grid[r][c] = bit;
-                            }
-                        }
-                    }
-                    up = !up;
-                }
-
-                var fmt = 0x77C4;
-                var fmtCoords1 = [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
-                var fmtCoords2 = [[size-1,8],[size-2,8],[size-3,8],[size-4,8],[size-5,8],[size-6,8],[size-7,8],[8,size-8],[8,size-7],[8,size-6],[8,size-5],[8,size-4],[8,size-3],[8,size-2],[8,size-1]];
-                for (var i = 0; i < 15; i++) {
-                    var bit = (fmt >>> (14 - i)) & 1;
-                    grid[fmtCoords1[i][0]][fmtCoords1[i][1]] = bit;
-                    grid[fmtCoords2[i][0]][fmtCoords2[i][1]] = bit;
-                }
-
-                if (ver >= 7) {
-                    var verTable = { 7: 0x07C94, 8: 0x085BC, 9: 0x09A99, 10: 0x0A4D3 };
-                    var vBits = verTable[ver];
-                    for (var i = 0; i < 18; i++) {
-                        var bit = (vBits >>> i) & 1;
-                var al = info.align;
-                for (var i = 0; i < al.length; i++) {
-                    for (var j = 0; j < al.length; j++) {
-                        var ar = al[i], ac = al[j];
-                        if (isFunc[ar][ac]) continue;
-                        for (var dr = -2; dr <= 2; dr++) {
-                            for (var dc = -2; dc <= 2; dc++) {
-                                var v = Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0);
-                                setMod(ar + dr, ac + dc, v, true);
-                            }
-                        }
-                    }
-                }
-
-                for (var i = 8; i < size - 8; i++) {
-                    if (!isFunc[6][i]) setMod(6, i, i % 2 === 0, true);
-                    if (!isFunc[i][6]) setMod(i, 6, i % 2 === 0, true);
-                }
-
-                for (var i = 0; i < 9; i++) {
-                    if (i !== 6) { isFunc[8][i] = true; isFunc[i][8] = true; }
-                }
-                for (var i = 0; i < 8; i++) {
-                    isFunc[size - 1 - i][8] = true;
-                    isFunc[8][size - 1 - i] = true;
-                }
-                setMod(size - 8, 8, 1, true);
-
-                if (ver >= 7) {
-                    for (var i = 0; i < 6; i++) {
-                        for (var j = 0; j < 3; j++) {
-                            isFunc[i][size - 11 + j] = true;
-                            isFunc[size - 11 + j][i] = true;
-                        }
-                    }
-                }
-
-                var allBits = [];
-                for (var i = 0; i < finalBytes.length; i++) {
-                    for (var b = 7; b >= 0; b--) allBits.push((finalBytes[i] >>> b) & 1);
-                }
-
-                var bitIdx = 0, up = true;
-                for (var col = size - 1; col >= 1; col -= 2) {
-                    if (col === 6) col--;
-                    for (var step = 0; step < size; step++) {
-                        var r = up ? (size - 1 - step) : step;
-                        for (var dx = 0; dx < 2; dx++) {
-                            var c = col - dx;
-                            if (!isFunc[r][c]) {
-                                var bit = bitIdx < allBits.length ? allBits[bitIdx++] : 0;
-                                if ((r + c) % 2 === 0) bit ^= 1;
-                                grid[r][c] = bit;
-                            }
-                        }
-                    }
-                    up = !up;
-                }
-
-                var fmt = 0x77C4;
-                var fmtCoords1 = [[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[8,7],[8,8],[7,8],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8]];
-                var fmtCoords2 = [[size-1,8],[size-2,8],[size-3,8],[size-4,8],[size-5,8],[size-6,8],[size-7,8],[8,size-8],[8,size-7],[8,size-6],[8,size-5],[8,size-4],[8,size-3],[8,size-2],[8,size-1]];
-                for (var i = 0; i < 15; i++) {
-                    var bit = (fmt >>> (14 - i)) & 1;
-                    grid[fmtCoords1[i][0]][fmtCoords1[i][1]] = bit;
-                    grid[fmtCoords2[i][0]][fmtCoords2[i][1]] = bit;
-                }
-
-                if (ver >= 7) {
-                    var verTable = { 7: 0x07C94, 8: 0x085BC, 9: 0x09A99, 10: 0x0A4D3 };
-                    var vBits = verTable[ver];
-                    for (var i = 0; i < 18; i++) {
-                        var bit = (vBits >>> i) & 1;
-                        var r = Math.floor(i / 3), c = size - 11 + (i % 3);
-                        grid[r][c] = bit;
-                        grid[c][r] = bit;
-                    }
-                }
-
-                return grid;
-            }
-
-            return {
-                renderToCanvas: function(canvas, text) {
-                    var matrix = makeQR(text);
-                    var count = matrix.length;
-                    var quiet = 2;
-                    var scale = 6;
-                    var dim = (count + quiet * 2) * scale;
-                    canvas.width = dim;
-                    canvas.height = dim;
-                    var ctx = canvas.getContext("2d");
-                    ctx.fillStyle = "#ffffff";
-                    ctx.fillRect(0, 0, dim, dim);
-                    ctx.fillStyle = "#000000";
-                    for (var r = 0; r < count; r++) {
-                        for (var c = 0; c < count; c++) {
-                            if (matrix[r][c] === 1) {
-                                ctx.fillRect((c + quiet) * scale, (r + quiet) * scale, scale, scale);
-                            }
-                        }
-                    }
-                }
-            };
-        })();
 
         function copiarPix() {
             if (!codigoPixGerado) return;
             navigator.clipboard.writeText(codigoPixGerado).then(function() {
-                alert("Código Pix Copia e Cola copiado com sucesso!");
+                alert("Código Pix Universal copiado! Agora basta colar no app do banco e digitar o valor.");
             });
         }
 
         window.onload = function() {
-            var params = new URLSearchParams(window.location.search);
-            var vf = params.get('v') ? parseFloat(params.get('v')) : 0.25;
-            var tx = params.get('tx') ? params.get('tx') : "JCS001";
-
-            document.getElementById("view-valor").innerText = "R$ " + vf.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             document.getElementById("view-tipo").innerText = TIPO_CHAVE;
+            codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
 
-            codigoPixGerado = montarPayloadPix(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA, vf, tx);
-            desenharQrBlindado(document.getElementById("canvasQr"), codigoPixGerado);
+            // Renderiza via Google Chart / QuickChart estável em SVG/PNG
+            var img = document.createElement("img");
+            img.alt = "QR Code Pix Universal";
+            img.src = "https://quickchart.io" + encodeURIComponent(codigoPixGerado);
+            document.getElementById("boxQr").appendChild(img);
         };
     </script>
 </body>
