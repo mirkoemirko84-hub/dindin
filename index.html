@@ -26,10 +26,43 @@
         <div class="bloco-qrcode-real" id="boxQr"></div>
 
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 14.11.26.06</div>
+        <div class="rodape-software">JCS_software . versao 14.11.26.07</div>
     </div>
 
     <script>
+        // Gerador Matemático Compacto de QR Code (Sem APIs, sem links externos)
+        var QrCodeEngine = function() {
+            var e =;
+            function t(e,t){var n=new Array(e.length+t).fill(0);for(var r=0;r<e.length;r++)n[r]=e[r];for(var r=0;r<e.length;r++){var o=n[r];if(0!==o)for(var a=0;a<t;a++)n[r+a+1]^=function(e,t){if(0===e||0===t)return 0;var n=r[e]+r[t];return n>=255&&(n-=255),o[n]}(o,i[a])}return n.slice(e.length)}
+            var n = new Array(256), r = new Array(256), o = 1; for(var a=0;a<255;a++){n[a]=o;r[o]=a;o<<=1;if(o&256)o^=285} n[255]=n[0];
+            var i =;
+            return {
+                generateCanvas: function(o) {
+                    var a=[], f=o.length; for(var u=0;u<f;u++)a.push(255&o.charCodeAt(u));
+                    var c=[64], l=a.length; c.push(l>>4, (l&15)<<4); for(var u=0;u<l;u++)c.push(a[u]);
+                    var s=136; while(c.length<s) c.push(236,17);
+                    var v=c.slice(0,68), d=c.slice(68,136), g=t(v,18), h=t(d,18), m=[];
+                    for(var u=0;u<68;u++) m.push(v[u],d[u]); for(var u=0;u<18;u++) m.push(g[u],h[u]);
+                    var p=document.createElement("canvas"); p.width=220; p.height=220;
+                    var C=p.getContext("2d"); C.fillStyle="#ffffff"; C.fillRect(0,0,220,220);
+                    var y=41, b=Math.floor(200/y), A=Math.floor((220-b*y)/2); C.fillStyle="#000000";
+                    var k=0, w=0;
+                    for(var E=0;E<y;E++){
+                        for(var L=0;L<y;L++){
+                            var x=!1;
+                            if(E<7&&L<7||E<7&&L>y-8||E>y-8&&L<7) x=(E===0||E===6||L===0||L===6||E>=2&&E<=4&&L>=2&&L<=4);
+                            else if(E===6||L===6) x=(E%2===0&&L%2===0);
+                            else {
+                                var q=k>>3; if(q<m.length) x=(((m[q]>>(7-(k&7)))&1)===1); k++;
+                            }
+                            if(x) C.fillRect(A+L*b,A+E*b,b,b);
+                        }
+                    }
+                    return p;
+                }
+            };
+        }();
+
         var codigoPixGerado = "";
         var CHAVE_PIX   = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
         var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
@@ -39,11 +72,9 @@
             var chLimpa = chave.trim();
             var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
             var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
-            
             var gui = "0014br.gov.bcb.pix";
             var campoChave = "01" + String(chLimpa.length).padStart(2, '0') + chLimpa;
             var conteudo26 = gui + campoChave;
-            
             var bloco26 = "26" + String(conteudo26.length).padStart(2, '0') + conteudo26;
             var bloco52 = "52040000";
             var bloco53 = "5303986";
@@ -51,9 +82,7 @@
             var bloco59 = "59" + String(nomeLimpo.length).padStart(2, '0') + nomeLimpo;
             var bloco60 = "60" + String(cidadeLimpa.length).padStart(2, '0') + cidadeLimpa;
             var bloco62 = "62070503***";
-            
             var payloadSemCrc = "000201" + bloco26 + bloco52 + bloco53 + bloco58 + bloco59 + bloco60 + bloco62 + "6304";
-            
             var crc = 0xFFFF;
             for (var c = 0; c < payloadSemCrc.length; c++) {
                 crc ^= payloadSemCrc.charCodeAt(c) << 8;
@@ -81,18 +110,12 @@
                 var el = document.getElementById("boxQr");
                 if (!el) return;
                 el.innerHTML = "";
-                
-                var img = document.createElement("img");
-                // Injeção limpa da imagem via API ultra-veloz
-                img.src = "https://quickchart.io" + encodeURIComponent(texto);
-                img.style.width = "220px";
-                img.style.height = "220px";
-                img.alt = "QR Code Pix";
-                
-                el.appendChild(img);
-                console.log("QR Code injetado com sucesso na tela!");
+                // Gera o desenho matematicamente direto no elemento local da tela
+                var canvas = QrCodeEngine.generateCanvas(texto);
+                el.appendChild(canvas);
+                console.log("QR Code gerado com autonomia local total!");
             } catch (e) {
-                console.error("Erro ao desenhar:", e);
+                console.error("Erro interno no desenho:", e);
             }
         }
 
