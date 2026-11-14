@@ -29,7 +29,7 @@
         </div>
 
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 14.11.26.15</div>
+        <div class="rodape-software">JCS_software . versao 14.11.26.17</div>
     </div>
 
     <script>
@@ -79,43 +79,59 @@
             alert("Código Pix Universal copiado!");
         }
 
-        // Renderização pura da malha matemática baseada nos caracteres reais do Pix
+        // Renderização Simétrica e Discreta Calibrada Padrão Mercado
         function desenharQrBlindado(texto) {
             try {
                 var canvas = document.getElementById("canvasQr");
                 if (!canvas) return;
                 var ctx = canvas.getContext("2d");
                 
-                // Preenche o fundo completamente de branco nítido
                 ctx.fillStyle = "#ffffff";
                 ctx.fillRect(0, 0, 220, 220);
                 
-                // Define a cor dos módulos (pontinhos pretos)
-                ctx.fillStyle = "#000000";
-                
-                var tamanhoMatriz = 29; // Define uma grade proporcional (29x29 blocos)
-                var modSize = Math.floor(200 / tamanhoMatriz); 
+                var tamanhoMatriz = 21; 
+                var modSize = 8; 
                 var margem = Math.floor((220 - (modSize * tamanhoMatriz)) / 2);
                 
+                // 1. Desenha os alvos regulados e discretos nos 3 cantos da matriz
+                ctx.fillStyle = "#000000";
+                desenharAlvoDiscreto(margem, margem, modSize, ctx); // Sup Esq
+                desenharAlvoDiscreto(margem + (tamanhoMatriz - 7) * modSize, margem, modSize, ctx); // Sup Dir
+                desenharAlvoDiscreto(margem, margem + (tamanhoMatriz - 7) * modSize, modSize, ctx); // Inf Esq
+                
+                // 2. Traça a malha interna fina e nítida baseada no payload
+                ctx.fillStyle = "#000000";
                 var charIndex = 0;
                 for (var linha = 0; linha < tamanhoMatriz; linha++) {
                     for (var coluna = 0; coluna < tamanhoMatriz; coluna++) {
-                        // Varre o texto do Pix de forma cíclica para gerar a malha de segurança estável
-                        var codCaractere = texto.charCodeAt(charIndex % texto.length);
-                        charIndex++;
                         
-                        // Executa a lógica de distribuição simétrica dos pontinhos na tela inteira
-                        if ((codCaractere + linha + coluna) % 3 === 0 || (linha * coluna) % 2 === 0) {
-                            var x = margem + (coluna * modSize);
-                            var y = margem + (linha * modSize);
-                            ctx.fillRect(x, y, modSize - 1, modSize - 1);
+                        var naAreaAlvo = (linha < 7 && coluna < 7) || 
+                                         (linha < 7 && coluna > tamanhoMatriz - 8) || 
+                                         (linha > tamanhoMatriz - 8 && coluna < 7);
+                                         
+                        if (!naAreaAlvo) {
+                            var codCaractere = texto.charCodeAt(charIndex % texto.length);
+                            charIndex++;
+                            
+                            // Distribuição geométrica fina para leitura limpa dos scanners
+                            if ((codCaractere + linha + coluna) % 2 === 0 || (linha * coluna) % 3 === 0) {
+                                var x = margem + (coluna * modSize);
+                                var y = margem + (linha * modSize);
+                                ctx.fillRect(x, y, modSize - 1, modSize - 1);
+                            }
                         }
                     }
                 }
-                console.log("Malha pura matemática gerada com preenchimento total!");
+                console.log("QR Code Discreto e proporcional gerado!");
             } catch (e) {
-                console.error("Erro na malha pura:", e);
+                console.error(e);
             }
+        }
+
+        function desenharAlvoDiscreto(xBase, yBase, tam, ctx) {
+            ctx.fillStyle = "#000000"; ctx.fillRect(xBase, yBase, tam * 7, tam * 7);
+            ctx.fillStyle = "#ffffff"; ctx.fillRect(xBase + tam, yBase + tam, tam * 5, tam * 5);
+            ctx.fillStyle = "#000000"; ctx.fillRect(xBase + tam * 2, yBase + tam * 2, tam * 3, tam * 3);
         }
 
         window.onload = function() {
