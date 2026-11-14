@@ -12,10 +12,12 @@
         .txt-destino { font-size: 13px; color: #475569; margin-bottom: 6px; font-weight: 700; }
         .badge-tipo { display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px; }
         .bloco-qrcode-real { display: flex; justify-content: center; align-items: center; background: #ffffff; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; width: 240px; height: 240px; margin: 12px auto; box-sizing: border-box; }
-        .bloco-qrcode-real canvas { width: 216px; height: 216px; display: block; }
+        .bloco-qrcode-real canvas, .bloco-qrcode-real img { display: block; width: 216px; height: 216px; max-width: 100%; }
         .btn-copiar { margin-top: 12px; padding: 14px 20px; font-size: 13px; font-weight: bold; background-color: #0d47a1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; }
         .rodape-software { margin-top: 22px; font-size: 10px; color: #94a3b8; font-family: monospace; text-align: center; }
     </style>
+    <!-- Aciona o motor qrcode.js que criamos e salvamos no repositório -->
+    <script src="qrcode.js"></script>
 </head>
 <body>
     <div class="container-pix">
@@ -24,12 +26,10 @@
         <div class="txt-destino" id="view-destino">Destino: JOSE CARLOS SUGUIMOTO</div>
         <div class="badge-tipo" id="view-tipo">CHAVE ALEATÓRIA</div>
         
-        <div class="bloco-qrcode-real" id="boxQr">
-            <canvas id="canvasQr" width="220" height="220"></canvas>
-        </div>
+        <div class="bloco-qrcode-real" id="boxQr"></div>
 
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 14.11.26.17</div>
+        <div class="rodape-software">JCS_software . versao 14.11.26.18</div>
     </div>
 
     <script>
@@ -79,59 +79,22 @@
             alert("Código Pix Universal copiado!");
         }
 
-        // Renderização Simétrica e Discreta Calibrada Padrão Mercado
         function desenharQrBlindado(texto) {
             try {
-                var canvas = document.getElementById("canvasQr");
-                if (!canvas) return;
-                var ctx = canvas.getContext("2d");
+                var el = document.getElementById("boxQr");
+                if (!el) return;
+                el.innerHTML = "";
                 
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, 220, 220);
-                
-                var tamanhoMatriz = 21; 
-                var modSize = 8; 
-                var margem = Math.floor((220 - (modSize * tamanhoMatriz)) / 2);
-                
-                // 1. Desenha os alvos regulados e discretos nos 3 cantos da matriz
-                ctx.fillStyle = "#000000";
-                desenharAlvoDiscreto(margem, margem, modSize, ctx); // Sup Esq
-                desenharAlvoDiscreto(margem + (tamanhoMatriz - 7) * modSize, margem, modSize, ctx); // Sup Dir
-                desenharAlvoDiscreto(margem, margem + (tamanhoMatriz - 7) * modSize, modSize, ctx); // Inf Esq
-                
-                // 2. Traça a malha interna fina e nítida baseada no payload
-                ctx.fillStyle = "#000000";
-                var charIndex = 0;
-                for (var linha = 0; linha < tamanhoMatriz; linha++) {
-                    for (var coluna = 0; coluna < tamanhoMatriz; coluna++) {
-                        
-                        var naAreaAlvo = (linha < 7 && coluna < 7) || 
-                                         (linha < 7 && coluna > tamanhoMatriz - 8) || 
-                                         (linha > tamanhoMatriz - 8 && coluna < 7);
-                                         
-                        if (!naAreaAlvo) {
-                            var codCaractere = texto.charCodeAt(charIndex % texto.length);
-                            charIndex++;
-                            
-                            // Distribuição geométrica fina para leitura limpa dos scanners
-                            if ((codCaractere + linha + coluna) % 2 === 0 || (linha * coluna) % 3 === 0) {
-                                var x = margem + (coluna * modSize);
-                                var y = margem + (linha * modSize);
-                                ctx.fillRect(x, y, modSize - 1, modSize - 1);
-                            }
-                        }
-                    }
-                }
-                console.log("QR Code Discreto e proporcional gerado!");
+                // Executa a biblioteca QRCode real injetando as variáveis corretas de criptografia
+                new QRCode(el, {
+                    text: texto,
+                    width: 216,
+                    height: 216
+                });
+                console.log("QR Code Criptografado Real Gerado no Canvas!");
             } catch (e) {
-                console.error(e);
+                console.error("Erro ao chamar o motor qrcode.js:", e);
             }
-        }
-
-        function desenharAlvoDiscreto(xBase, yBase, tam, ctx) {
-            ctx.fillStyle = "#000000"; ctx.fillRect(xBase, yBase, tam * 7, tam * 7);
-            ctx.fillStyle = "#ffffff"; ctx.fillRect(xBase + tam, yBase + tam, tam * 5, tam * 5);
-            ctx.fillStyle = "#000000"; ctx.fillRect(xBase + tam * 2, yBase + tam * 2, tam * 3, tam * 3);
         }
 
         window.onload = function() {
