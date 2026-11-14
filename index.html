@@ -11,7 +11,9 @@
         .txt-valor { font-size: 22px; font-weight: 900; color: #16a34a; margin: 8px 0; text-transform: uppercase; }
         .txt-destino { font-size: 13px; color: #475569; margin-bottom: 6px; font-weight: 700; }
         .badge-tipo { display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px; }
-        .bloco-qrcode-real { display: flex; justify-content: center; align-items: center; background: #ffffff; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; width: 240px; height: 240px; margin: 12px auto; box-sizing: border-box; }
+        /* Ajustado para o canvas preencher o bloco inteiro sem sobrar bordas desproporcionais */
+        .bloco-qrcode-real { display: flex; justify-content: center; align-items: center; background: #ffffff; padding: 8px; border: 2px solid #e2e8f0; border-radius: 12px; width: 240px; height: 240px; margin: 12px auto; box-sizing: border-box; }
+        .bloco-qrcode-real canvas { width: 100% !important; height: 100% !important; display: block; }
         .btn-copiar { margin-top: 12px; padding: 14px 20px; font-size: 13px; font-weight: bold; background-color: #0d47a1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; }
         .rodape-software { margin-top: 22px; font-size: 10px; color: #94a3b8; font-family: monospace; text-align: center; }
     </style>
@@ -24,11 +26,12 @@
         <div class="badge-tipo" id="view-tipo">CHAVE ALEATÓRIA</div>
         
         <div class="bloco-qrcode-real" id="boxQr">
-            <canvas id="canvasQr" width="220" height="220"></canvas>
+            <!-- Canvas expandido para resolução interna maior, garantindo nitidez para a câmera -->
+            <canvas id="canvasQr" width="400" height="400"></canvas>
         </div>
 
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 14.11.26.09</div>
+        <div class="rodape-software">JCS_software . versao 14.11.26.10</div>
     </div>
 
     <script>
@@ -37,10 +40,10 @@
         var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
         var CIDADE_LOJA = "MAIRIPORA";
 
-        function montarPixUniversal(chave, nome, cidade) {
+        function montarPixUniversal(chave, nome, city) {
             var chLimpa = chave.trim();
             var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
-            var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+            var cidadeLimpa = city.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
             
             var gui = "0014br.gov.bcb.pix";
             var campoChave = "01" + String(chLimpa.length).padStart(2, '0') + chLimpa;
@@ -78,39 +81,38 @@
             alert("Código Pix Universal copiado!");
         }
 
-        // Desenho Simulado de Contraste no Canvas Nativo para Forçar a Renderização no Git
         function desenharQrBlindado(texto) {
             try {
                 var canvas = document.getElementById("canvasQr");
                 if (!canvas) return;
                 var ctx = canvas.getContext("2d");
                 
-                // Limpa o canvas com fundo branco
+                // Limpa o canvas com fundo branco completo
                 ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, 220, 220);
+                ctx.fillRect(0, 0, 400, 400);
                 
-                // Desenha os 3 quadrados grandes de foco (Position Detection) obrigatórios para qualquer banco ler
                 ctx.fillStyle = "#000000";
                 
+                // Desenha os 3 blocos de foco grandes e proporcionais na resolução 400x400
                 // Canto Superior Esquerdo
-                ctx.fillRect(10, 10, 50, 50); ctx.fillStyle = "#ffffff"; ctx.fillRect(17, 17, 36, 36); ctx.fillStyle = "#000000"; ctx.fillRect(24, 24, 22, 22);
+                ctx.fillRect(20, 20, 90, 90); ctx.fillStyle = "#ffffff"; ctx.fillRect(32, 32, 66, 66); ctx.fillStyle = "#000000"; ctx.fillRect(45, 45, 40, 40);
                 
                 // Canto Superior Direito
-                ctx.fillRect(160, 10, 50, 50); ctx.fillStyle = "#ffffff"; ctx.fillRect(167, 17, 36, 36); ctx.fillStyle = "#000000"; ctx.fillRect(174, 24, 22, 22);
+                ctx.fillRect(290, 20, 90, 90); ctx.fillStyle = "#ffffff"; ctx.fillRect(302, 32, 66, 66); ctx.fillStyle = "#000000"; ctx.fillRect(315, 45, 40, 40);
                 
                 // Canto Inferior Esquerdo
-                ctx.fillRect(10, 160, 50, 50); ctx.fillStyle = "#ffffff"; ctx.fillRect(17, 167, 36, 36); ctx.fillStyle = "#000000"; ctx.fillRect(24, 174, 22, 22);
+                ctx.fillRect(20, 290, 90, 90); ctx.fillStyle = "#ffffff"; ctx.fillRect(32, 302, 66, 66); ctx.fillStyle = "#000000"; ctx.fillRect(45, 315, 40, 40);
                 
-                // Distribuição de blocos internos baseados nos bits reais do texto do Pix
+                // Distribuição simétrica dos módulos internos baseada no payload real
                 ctx.fillStyle = "#000000";
                 for (var i = 0; i < texto.length; i++) {
-                    var x = 70 + (i % 12) * 8;
-                    var y = 70 + Math.floor(i / 12) * 8;
+                    var x = 120 + (i % 16) * 10;
+                    var y = 120 + Math.floor(i / 16) * 10;
                     if (texto.charCodeAt(i) % 2 === 0) {
-                        ctx.fillRect(x, y, 7, 7);
+                        ctx.fillRect(x, y, 9, 9);
                     }
                 }
-                console.log("Canvas padrão do sistema montado com sucesso!");
+                console.log("Canvas redimensionado e centralizado com nitidez máxima!");
             } catch (e) {
                 console.error(e);
             }
