@@ -26,7 +26,7 @@
         <div class="bloco-qrcode-real" id="boxQr"></div>
 
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 14.11.26.05</div>
+        <div class="rodape-software">JCS_software . versao 14.11.26.06</div>
     </div>
 
     <script>
@@ -76,7 +76,6 @@
             alert("Código Pix Universal copiado!");
         }
 
-        // Desenho dinâmico via Imagem Nativa com tratamento de contraste (100% blindado contra bloqueios)
         function desenharQrBlindado(texto) {
             try {
                 var el = document.getElementById("boxQr");
@@ -84,16 +83,16 @@
                 el.innerHTML = "";
                 
                 var img = document.createElement("img");
-                // API pública estável com qzone nativo e tamanho calibrado para telas e foco de câmera
+                // Injeção limpa da imagem via API ultra-veloz
                 img.src = "https://quickchart.io" + encodeURIComponent(texto);
                 img.style.width = "220px";
                 img.style.height = "220px";
                 img.alt = "QR Code Pix";
                 
                 el.appendChild(img);
-                console.log("Desenho do QR Code injetado com sucesso!");
+                console.log("QR Code injetado com sucesso na tela!");
             } catch (e) {
-                console.error("Erro ao desenhar QR Code:", e);
+                console.error("Erro ao desenhar:", e);
             }
         }
 
