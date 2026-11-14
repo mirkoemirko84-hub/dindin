@@ -15,8 +15,6 @@
         .btn-copiar { margin-top: 12px; padding: 14px 20px; font-size: 13px; font-weight: bold; background-color: #0d47a1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; }
         .rodape-software { margin-top: 22px; font-size: 10px; color: #94a3b8; font-family: monospace; text-align: center; }
     </style>
-    <!-- MOTOR DO QR CODE: Link oficial, leve e seguro. Sem códigos gigantes no arquivo! -->
-    <script src="https://cloudflare.com"></script>
 </head>
 <body>
     <div class="container-pix">
@@ -28,7 +26,7 @@
         <div class="bloco-qrcode-real" id="boxQr"></div>
 
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 14.11.26.04</div>
+        <div class="rodape-software">JCS_software . versao 14.11.26.05</div>
     </div>
 
     <script>
@@ -78,22 +76,22 @@
             alert("Código Pix Universal copiado!");
         }
 
+        // Desenho dinâmico via Imagem Nativa com tratamento de contraste (100% blindado contra bloqueios)
         function desenharQrBlindado(texto) {
             try {
                 var el = document.getElementById("boxQr");
                 if (!el) return;
                 el.innerHTML = "";
                 
-                // Desenha usando o motor oficial importado lá no <head>
-                new QRCode(el, {
-                    text: texto,
-                    width: 216,
-                    height: 216,
-                    colorDark: "#000000",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.M
-                });
-                console.log("QR Code renderizado com sucesso!");
+                var img = document.createElement("img");
+                // API pública estável com qzone nativo e tamanho calibrado para telas e foco de câmera
+                img.src = "https://quickchart.io" + encodeURIComponent(texto);
+                img.style.width = "220px";
+                img.style.height = "220px";
+                img.alt = "QR Code Pix";
+                
+                el.appendChild(img);
+                console.log("Desenho do QR Code injetado com sucesso!");
             } catch (e) {
                 console.error("Erro ao desenhar QR Code:", e);
             }
