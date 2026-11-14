@@ -15,6 +15,8 @@
         .btn-copiar { margin-top: 12px; padding: 14px 20px; font-size: 13px; font-weight: bold; background-color: #0d47a1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; }
         .rodape-software { margin-top: 22px; font-size: 10px; color: #94a3b8; font-family: monospace; text-align: center; }
     </style>
+    <!-- MOTOR DO QR CODE: Link oficial, leve e seguro. Sem códigos gigantes no arquivo! -->
+    <script src="https://cloudflare.com"></script>
 </head>
 <body>
     <div class="container-pix">
@@ -26,18 +28,16 @@
         <div class="bloco-qrcode-real" id="boxQr"></div>
 
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 14.11.26.02</div>
+        <div class="rodape-software">JCS_software . versao 14.11.26.04</div>
     </div>
+
     <script>
         var codigoPixGerado = "";
-
-        var TIPO_CHAVE  = "CHAVE ALEATÓRIA";
         var CHAVE_PIX   = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
         var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
         var CIDADE_LOJA = "MAIRIPORA";
 
         function montarPixUniversal(chave, nome, cidade) {
-            // Remove espaços extras e força maiúsculas sem acentos
             var chLimpa = chave.trim();
             var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
             var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
@@ -64,8 +64,7 @@
                     else crc = crc << 1;
                 }
             }
-            var hexCrc = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-            return payloadSemCrc + hexCrc;
+            return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
         }
 
         function copiarPix() {
@@ -82,22 +81,25 @@
         function desenharQrBlindado(texto) {
             try {
                 var el = document.getElementById("boxQr");
-                if(!el) return;
+                if (!el) return;
                 el.innerHTML = "";
-                var img = document.createElement("img");
-                // API estável com tratamento de contraste correto para câmeras de celular
-                img.src = "https://qrserver.com" + encodeURIComponent(texto);
-                img.style.width = "220px";
-                img.style.height = "220px";
-                el.appendChild(img);
-            } catch(e) {
-                console.error(e);
+                
+                // Desenha usando o motor oficial importado lá no <head>
+                new QRCode(el, {
+                    text: texto,
+                    width: 216,
+                    height: 216,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                console.log("QR Code renderizado com sucesso!");
+            } catch (e) {
+                console.error("Erro ao desenhar QR Code:", e);
             }
         }
 
         window.onload = function() {
-            document.getElementById("view-destino").innerText = "Destino: " + NOME_LOJA;
-            document.getElementById("view-tipo").innerText = TIPO_CHAVE;
             codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
             desenharQrBlindado(codigoPixGerado);
         };
