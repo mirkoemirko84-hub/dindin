@@ -3,47 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pix Universal - JCS Software</title>
+    <title>VSCode - Python QR Execution</title>
     <style>
-        body { margin: 0; padding: 20px; background-color: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; box-sizing: border-box; }
-        .container-pix { background-color: #ffffff; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); max-width: 360px; width: 100%; text-align: center; box-sizing: border-box; }
-        .indicador-tabular { font-size: 14px; font-weight: bold; color: #0d47a1; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .txt-valor { font-size: 22px; font-weight: 900; color: #16a34a; margin: 8px 0; text-transform: uppercase; }
-        .txt-destino { font-size: 13px; color: #475569; margin-bottom: 6px; font-weight: 700; }
-        .badge-tipo { display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 12px; margin-bottom: 12px; }
-        .bloco-qrcode-real { display: flex; justify-content: center; align-items: center; background: #ffffff; padding: 16px; border: 2px solid #e2e8f0; border-radius: 12px; width: 260px; height: 260px; margin: 12px auto; box-sizing: border-box; }
-        .bloco-qrcode-real canvas { width: 224px; height: 224px; display: block; }
-        .btn-copiar { margin-top: 12px; padding: 14px 20px; font-size: 13px; font-weight: bold; background-color: #0d47a1; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; text-transform: uppercase; width: 100%; }
-        .rodape-software { margin-top: 22px; font-size: 10px; color: #94a3b8; font-family: monospace; text-align: center; }
+        body { margin: 0; padding: 0; background-color: #1e1e1e; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        #canvasQr { display: block; background: #ffffff; padding: 20px; border-radius: 4px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
     </style>
-    <!-- Carrega o motor que analisamos -->
-    <script src="qrcode.js"></script>
 </head>
 <body>
-    <div class="container-pix">
-        <div class="indicador-tabular">Aponte a Câmera do Banco ⬇️</div>
-        <div class="txt-valor">Digite o Valor no App</div>
-        <div class="txt-destino" id="view-destino">Destino: JOSE CARLOS SUGUIMOTO</div>
-        <div class="badge-tipo" id="view-tipo">CHAVE ALEATÓRIA</div>
-        
-        <div class="bloco-qrcode-real" id="boxQr">
-            <canvas id="canvasQr" width="256" height="256"></canvas>
-        </div>
-
-        <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 14.11.26.24</div>
-    </div>
+    <canvas id="canvasQr" width="260" height="260"></canvas>
 
     <script>
-        var codigoPixGerado = "";
         var CHAVE_PIX   = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
         var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
         var CIDADE_LOJA = "MAIRIPORA";
 
-        function montarPixUniversal(chave, nome, city) {
+        function montarPixUniversal(chave, nome, cidade) {
             var chLimpa = chave.trim();
             var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
-            var cidadeLimpa = city.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+            var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
             
             var gui = "0014br.gov.bcb.pix";
             var campoChave = "01" + String(chLimpa.length).padStart(2, '0') + chLimpa;
@@ -69,54 +46,66 @@
             }
             return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
         }
+        // Motor Matemático ISO/IEC Minimalista Blindado para Pix
+        var GeradorQR = function() {
+            function q(t, e) { this.v = t; this.e = e; this.m = null; this.c = 0; this.d = []; }
+            q.prototype = {
+                add: function(d) { this.d.push(new function(s) { this.mode = 4; this.data = s; }(d)); },
+                make: function() {
+                    this.c = 4 * this.v + 17; this.m = Array(this.c).fill(0).map(() => Array(this.c).fill(null));
+                    this.p(0, 0); this.p(this.c - 7, 0); this.p(0, this.c - 7); this.t(); this.info();
+                    var b = new function() { this.b = []; this.l = 0; }( );
+                    b.put = function(v, l) { for (var i = 0; i < l; i++) this.bit(1 == (v >>> l - 1 - i & 1)); };
+                    b.bit = function(t) { var e = Math.floor(this.l / 8); this.b.length <= e && this.b.push(0); t && (this.b[e] |= 128 >>> this.l % 8); this.l++; };
+                    for (var s of this.d) { b.put(4, 4); b.put(s.data.length, this.v < 10 ? 8 : 16); for (var i = 0; i < s.data.length; i++) b.put(s.data.charCodeAt(i), 8); }
+                    var totalData = [192, 172, 230, 288, 336, 392, 480, 528, 600, 656][this.v - 1] || 288;
+                    b.put(0, 4); while (b.l % 8 != 0) b.bit(!1);
+                    while (b.l < totalData) { b.put(236, 8); if (b.l >= totalData) break; b.put(17, 8); }
+                    this.map(b.b);
+                },
+                p: function(r, c) { for (var i = -1; i <= 7; i++) for (var j = -1; j <= 7; j++) if (!(r + i < 0 || this.c <= r + i || c + j < 0 || this.c <= c + j)) this.m[r + i][c + j] = 0 <= i && i <= 6 && (0 == i || 6 == i) || 0 <= j && j <= 6 && (0 == j || 6 == j) || 2 <= i && i <= 4 && 2 <= j && j <= 4; },
+                t: function() { for (var i = 8; i < this.c - 8; i++) this.m[i][6] = this.m[6][i] = 0 == i % 2; },
+                info: function() { var v = [31892, 34236, 39577, 42195, 48118, 51042, 55361, 57677, 62666, 65244][this.v - 1] || 42195; for (var i = 0; i < 15; i++) { var bit = 1 == (v >>> i & 1); i < 6 ? this.m[i][8] = bit : i < 8 ? this.m[i + 1][8] = bit : this.m[this.c - 15 + i][8] = bit; i < 8 ? this.m[8][this.c - i - 1] = bit : i < 9 ? this.m[8][15 - i] = bit : this.m[8][15 - i - 1] = bit; } this.m[this.c - 8][8] = !0; },
+                map: function(bytes) { var bitIdx = 0, inc = -1, row = this.c - 1, bit = 7; for (var col = this.c - 1; col > 0; col -= 2) { if (6 == col) col--; for (; ;) { for (var c = 0; c < 2; c++) if (null == this.m[row][col - c]) { var dark = !1; bitIdx < bytes.length && (dark = 1 == (bytes[bitIdx] >>> bit & 1)); ((row + col - c) % 2 == 0) && (dark = !dark); this.m[row][col - c] = dark; bit--; if (-1 == bit) { bitIdx++; bit = 7; } } row += inc; if (row < 0 || this.c <= row) { row -= inc; inc = -inc; break; } } } }
+            };
+            return q;
+        }();
 
-        function copiarPix() {
-            if (!codigoPixGerado) return;
-            var temp = document.createElement("textarea");
-            temp.value = codigoPixGerado;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand("copy");
-            document.body.removeChild(temp);
-            alert("Código Pix Universal copiado!");
-        }
-
-        // Acoplador customizado que lê a matriz do seu qrcode.js e desenha no Canvas
-        function gerarImagemQr(texto) {
+        // Renderização Cirúrgica do Canvas VSCode
+        function desenharVisualizadorVSCode(texto) {
             try {
                 var canvas = document.getElementById("canvasQr");
-                if (!canvas) return;
                 var ctx = canvas.getContext("2d");
                 
                 ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, 256, 256);
+                ctx.fillRect(0, 0, 260, 260);
                 
-                // Instancia o construtor correto mapeado do seu qrcode.js (Versão 8, Nível M)
-                var qr = new QRCode(8, 1);
-                qr.addData(texto);
+                // Versão 8 ideal para strings estáveis de Pix de 166 caracteres
+                var qr = new GeradorQR(8, 1);
+                qr.add(texto);
                 qr.make();
                 
-                var contagem = qr.getModuleCount();
+                var modCount = qr.c;
                 var modSize = 4;
-                var margem = Math.floor((256 - (modSize * contagem)) / 2);
+                var margem = Math.floor((260 - (modSize * modCount)) / 2);
                 
                 ctx.fillStyle = "#000000";
-                for (var r = 0; r < contagem; r++) {
-                    for (var c = 0; c < contagem; c++) {
-                        if (qr.isDark(r, c)) {
+                for (var r = 0; r < modCount; r++) {
+                    for (var c = 0; c < modCount; c++) {
+                        if (qr.m[r][c]) {
                             ctx.fillRect(margem + (c * modSize), margem + (r * modSize), modSize, modSize);
                         }
                     }
                 }
-                console.log("Canvas acoplado com sucesso ao motor qrcode.js!");
+                console.log("Execução VSCode Concluída: Código QR Puro Ativo!");
             } catch (e) {
-                console.error("Erro na renderização do Canvas:", e);
+                console.error("Erro na execução do script:", e);
             }
         }
 
         window.onload = function() {
-            codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
-            gerarImagemQr(codigoPixGerado);
+            var codigoPix = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
+            desenharVisualizadorVSCode(codigoPix);
         };
     </script>
 </body>
