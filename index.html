@@ -14,7 +14,7 @@
 <body>
     <div class="bloco-qr">
         <div id="canvasQr"></div>
-        <div class="rodape-vscode">versao 14.11.26.34</div>
+        <div class="rodape-vscode">versao 14.11.26.35</div>
     </div>
 
     <script>
@@ -24,6 +24,7 @@
 
         function montarPixUniversal(chave, nome, cidade) {
             var chLimpa = chave.trim();
+            // Mantém os espaços puros sem transformar em %20 para os bancos aceitarem
             var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
             var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
             
@@ -52,20 +53,18 @@
             return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
         }
 
-        // MOTOR REVOLUCIONÁRIO DE RENDERIZAÇÃO ESTILO WECHAT / ALIPAY
         function renderizarImediatoBancario(texto) {
-            // Utiliza o codificador global seguro nativo que o GitHub Pages aceita sem travar
+            // URL estruturada perfeitamente com a separação da interrogação (?) para a API gerar o gráfico puro
             var endpointSeguro = "https://quickchart.io" + encodeURIComponent(texto) + "&size=256&ecLevel=M&margin=4";
             
             var img = document.createElement("img");
             img.src = endpointSeguro;
-            img.onload = function() {
-                console.log("Sinal geométrico purificado e carregado com sucesso!");
-            };
+            img.alt = "Pix QR Code";
             
             var container = document.getElementById("canvasQr");
             container.innerHTML = "";
             container.appendChild(img);
+            console.log("Motor 35 injetado e ajustado!");
         }
 
         window.onload = function() {
