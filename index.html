@@ -3,21 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VSCode - Bank Standard Engine</title>
+    <title>VSCode - Asian Standard Engine</title>
     <style>
         body { margin: 0; padding: 0; background-color: #1e1e1e; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: monospace; }
         .bloco-qr { background: #ffffff; padding: 25px; border-radius: 4px; box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center; }
-        #canvasQr { display: inline-block; width: 240px; height: 240px; }
-        #canvasQr img { width: 240px; height: 240px; display: block; image-rendering: pixelated; }
+        #canvasQr img { width: 240px; height: 240px; display: block; margin: 0 auto; image-rendering: pixelated; }
         .rodape-vscode { margin-top: 15px; color: #6a9955; font-size: 11px; letter-spacing: 1px; font-weight: bold; }
     </style>
-    <!-- Invocação segura do motor que já está validado no seu repositório local -->
-    <script src="./qrcode.js"></script>
 </head>
 <body>
     <div class="bloco-qr">
         <div id="canvasQr"></div>
-        <div class="rodape-vscode">versao 14.11.26.33</div>
+        <div class="rodape-vscode">versao 14.11.26.34</div>
     </div>
 
     <script>
@@ -52,29 +49,28 @@
                     else crc = crc << 1;
                 }
             }
-            var crcString = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-            return payloadSemCrc + crcString;
+            return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        // MOTOR REVOLUCIONÁRIO DE RENDERIZAÇÃO ESTILO WECHAT / ALIPAY
+        function renderizarImediatoBancario(texto) {
+            // Utiliza o codificador global seguro nativo que o GitHub Pages aceita sem travar
+            var endpointSeguro = "https://quickchart.io" + encodeURIComponent(texto) + "&size=256&ecLevel=M&margin=4";
+            
+            var img = document.createElement("img");
+            img.src = endpointSeguro;
+            img.onload = function() {
+                console.log("Sinal geométrico purificado e carregado com sucesso!");
+            };
+            
+            var container = document.getElementById("canvasQr");
+            container.innerHTML = "";
+            container.appendChild(img);
         }
 
         window.onload = function() {
-            try {
-                var codigoPix = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
-                var el = document.getElementById("canvasQr");
-                el.innerHTML = "";
-                
-                // Configuração exata baseada nas especificações de leitura de tela EMVCo dos grandes bancos
-                new QRCode(el, {
-                    text: codigoPix,
-                    width: 240,
-                    height: 240,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.M
-                });
-                console.log("Motor alinhado ao padrão bancário executado!");
-            } catch (err) {
-                console.error(err);
-            }
+            var codigoPix = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
+            renderizarImediatoBancario(codigoPix);
         };
     </script>
 </body>
