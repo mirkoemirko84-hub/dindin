@@ -29,7 +29,7 @@
         </div>
 
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-software">JCS_software . versao 14.11.26.20</div>
+        <div class="rodape-software">JCS_software . versao 14.11.26.21</div>
     </div>
 
     <script>
@@ -79,48 +79,123 @@
             alert("Código Pix Universal copiado!");
         }
 
-        // Mini-Motor de Renderização Geométrica Real ISO/IEC (Compactado e Autônomo)
-var QRCodeNativo = function(){function f(a,b){this.typeNumber=a;this.errorCorrectLevel=b;this.modules=null;this.moduleCount=0;this.dataCache=null;this.dataList=[]}f.prototype={addData:function(a){this.dataList.push(new g(a));this.dataCache=null},isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw Error(a+","+b);return this.modules[a][b]},getModuleCount:function(){return this.moduleCount},make:function(){this.makeImpl(!1,this.getBestMaskPattern())},makeImpl:function(a,b){this.moduleCount=4*this.typeNumber+17;this.modules=Array(this.moduleCount);for(var c=0;c<this.moduleCount;c++){this.modules[c]=Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++)this.modules[c][d]=null}this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(a,b);7<=this.typeNumber&&this.setupTypeNumber(a);null==this.dataCache&&(this.dataCache=f.createData(this.typeNumber,this.errorCorrectLevel,this.dataList));this.mapData(this.dataCache,b)},setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>b+d||this.moduleCount<=b+d||(this.modules[a+c][b+d]=0<=c&&6>=c&&(0==c||6==c)||0<=d&&6>=d&&(0==d||6==d)||2<=c&&4>=c&&2<=d&&4>=d?!0:!1)},getBestMaskPattern:function(){for(var a=0,b=0,c=0;8<c;c++){this.makeImpl(!0,c);var d=h.getLostPoint(this);if(0==c||a>d)a=d,b=c}return b},setupTimingPattern:function(){for(var a=8;a<this.moduleCount-8;a++)null==this.modules[a]&&(this.modules[a]=0==a%2);for(a=8;a<this.moduleCount-8;a++)null==this.modules[a]&&(this.modules[a]=0==a%2)},setupPositionAdjustPattern:function(){for(var a=h.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var k=-2;2>=k;k++)this.modules[d+g][e+k]=-2==g||2==g||-2==k||2==k||0==g&&0==k?!0:!1}},setupTypeNumber:function(a){for(var b=h.getBCHTypeNumber(this.typeNumber),c=0;18>c;c++){var d=!a&&1==(b>>c&1);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(c=0;18>c;c++)d=!a&&1==(b>>c&1),this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d},setupTypeInfo:function(a,b){for(var c=h.getBCHTypeInfo(this.errorCorrectLevel<<3|b),d=0;15>d;d++){var e=!a&&1==(c>>d&1);6>d?this.modules[d]=e:8>d?this.modules[d+1]=e:this.modules[this.moduleCount-15+d]=e}for(d=0;15>d;d++)e=!a&&1==(c>>d&1),8>d?this.modules[this.moduleCount-d-1]=e:9>d?this.modules[15-d-1+1]=e:this.modules[15-d-1]=e;this.modules[this.moduleCount-8]=!a},mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,f=0,g=this.moduleCount-1;0<g;g-=2)for(6==g&&g--;;){for(var h=0;2>h;h++)if(null==this.modules[d][g-h]){var l=!1;f<a.length&&(l=1==(a[f]>>e&1));h.getMask(b,d,g-h)&&(l=!l);this.modules[d][g-h]=l;e--;-1==e&&(f++,e=7)}d+=c;if(0>d||this.moduleCount<=d){d-=c;c=-c;break}}}};
-f.createData=function(a,b,c){b=h.getRSBlock(a,b);for(var d=new k,e=0;e<c.length;e++)var g=c[e],f=g.mode,l=g.data,m=k.getLengthInBits(f,a),d=d.append(f,4),d=d.append(l.length,m),d=g.write(d);for(e=g=0;e<b.length;e++)g+=b[e].dataCount;if(d.getLengthInBits()>8*g)throw Error("code length overflow. ("+d.getLengthInBits()+">"+8*g+")");for(d.getLengthInBits()+4<=8*g&&(d=d.append(0,4));0!=d.getLengthInBits()%8;)d=d.append(!1,1);for(;;){if(d.getLengthInBits()>=8*g)break;d=d.append(236,8);if(d.getLengthInBits()>=8*g)break;d=d.append(17,8)}return f.createBytes(d,b)};f.createBytes=function(a,b){for(var c=0,d=0,e=0,g=Array(b.length),f=Array(b.length),l=0;l<b.length;l++){var m=b[l].dataCount,h=b[l].totalCount-m,c=Math.max(c,m),d=Math.max(d,h);g[l]=Array(m);for(var p=0;p<g[l].length;p++)g[l][p]=255&a.buffer[p+e];e+=m;p=h;var q=void 0,q=0;for(var r=0;r<p;r++)q=r<l.length?0:0;p=new n(g[l],h);f[l]=Array(p.numDataWords+p.numCheckWords);for(q=0;q<p.numDataWords;q++)f[l][q]=p.dataWords[q];for(q=0;q<p.numCheckWords;q++)f[l][q+p.numDataWords]=p.ecWords[q]}for(l=p=0;l<b.length;l++)p+=b[l].totalCount;a=Array(p);c=0;for(p=0;p<c;p++)for(l=0;l<b.length;l++)p<g[l].length&&(a[c++]=g[l][p]);for(p=0;p<d;p++)for(l=0;l<b.length;l++)p<f[l].length-g[l].length&&(a[c++]=f[l][p+g[l].length]);return a};var g=function(a){this.mode=4;this.data=a};g.prototype={getLength:function(){return this.data.length},write:function(a){for(var b=0;b<this.data.length;b++)a=a.append(this.data.charCodeAt(b),8);return a}};var h={PATTERN_POSITION_TABLE:[[],[],[],[],[],[],[],[6,22,38],[6,24,42]],G15:1335,G18:7973,G15_MASK:21522,getBCHTypeInfo:function(a){for(var b=a<<10;0<=h.getBCHDigit(b)-h.getBCHDigit(h.G15);)b^=h.G15<<(h.getBCHDigit(b)-h.getBCHDigit(h.G15));return(a<<10|b)^h.G15_MASK},getBCHTypeNumber:function(a){for(var b=a<<12;0<=h.getBCHDigit(b)-h.getBCHDigit(h.G18);)b^=h.G18<<(h.getBCHDigit(b)-h.getBCHDigit(h.G18));return a<<12|b},getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},getPatternPosition:function(a){return h.PATTERN_POSITION_TABLE[a-1]},getMask:function(a,b,c){switch(a){case 0:return 0==(b+c)%2;case 1:return 0==b%2;case 2:return 0==c%3;case 3:return 0==(b+c)%3;case 4:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case 5:return 0==b*c%2+b*c%3;case 6:return 0==(b*c%2+b*c%3)%2;case 7:return 0==(b*c%3+(b+c)%2)%2;default:throw Error("bad maskPattern:"+a);}},getRSBlock:function(a,b){var c=void 0;switch(b){case 1:var d=[[26,19],[34,24],[42,29],[50,34],[60,38],[72,42],[84,46],[98,50]];break;case 0:d=[[26,16],[34,20],[42,24],[50,28],[60,32],[72,36],[84,40],[98,44]];break;case 3:d=[[26,13],[34,17],[42,20],[50,24],[60,26],[72,30],[84,32],[98,36]];break;case 2:d=[[26,9],[34,13],[42,15],[50,19],[60,22],[72,24],[84,28],[98,32]]}c=d[a-1];if(void 0!==c)return h.RSBlock.getRSBlocks(c[0],c[1]);throw Error("bad typeNumber:"+a);},getLostPoint:function(a){for(var b=a.getModuleCount(),c=0,d=0;d<b;d++)for(var e=0;e<b;e++){for(var g=0,f=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||b<=d+h))for(var k=-1;1>=k;k++)0>e+k||b<=e+k||0==h&&0==k||f==a.isDark(d+h,e+k)&&g++;5<g&&(c+=3+g-5)}for(d=0;d<b-1;d++)for(e=0;e<b-1;e++){g=0;a.isDark(d,e)&&g++;a.isDark(d+1,e)&&g++;a.isDark(d,e+1)&&g++;a.isDark(d+1,e+1)&&g++;if(0==g||4==g)c+=3}for(d=0;d<b;d++)for(e=0;e<b-6;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);for(e=0;e<b;e++)for(d=0;d<b-6;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);for(e=g=0;e<b;e++)for(d=0;d<b;d++)a.isDark(d,e)&&g++;b=Math.abs(100*g/b/b-50)/5;return c+=10*b}};h.RSBlock=function(a,b){this.totalCount=a;this.dataCount=b};h.RSBlock.getRSBlocks=function(a,b){return[new h.RSBlock(a,b)]};
-var k=function(){this.buffer=[];this.length=0};k.prototype={get:function(a){return 1==(this.buffer[Math.floor(a/8)]>>7-a%8&1)},append:function(a,b){for(var c=0;c<b;c++)this.appendBit(1==(a>>b-1-c&1));return this},getLengthInBits:function(){return this.length},appendBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0);a&&(this.buffer[b]|=128>>this.length%8);this.length++}};k.getLengthInBits=function(a,b){if(1<=b&&10>b)switch(a){case 1:return 10;case 2:return 9;case 4:return 8;case 8:return 8}else if(27>b)switch(a){case 1:return 12;case 2:return 11;case 4:return 16;case 8:return 10}else if(41>b)switch(a){case 1:return 14;case 2:return 13;case 4:return 16;case 8:return 12}throw Error("type:"+b);};var n=function(a,b){this.numDataWords=a.length;this.numCheckWords=b;this.dataWords=a;this.ecWords=Array(b);this.make()};n.prototype={make:function(){var a=m.getErrorCorrectPolynomial(this.numCheckWords),b=new l(this.dataWords,a.getLength()-1).multiply(a);this.ecWords=Array(a.getLength()-1);for(var c=0;c<this.ecWords.length;c++){var d=c+b.getLength()-this.ecWords.length;this.ecWords[c]=0<=d?b.get(d):0}},getAt:function(a){return a<this.numDataWords?this.dataWords[a]:this.ecWords[a-this.numDataWords]}};var l=function(a,b){for(var c=0;c<a.length&&0==a[c];)c++;this.num=Array(a.length-c+(b||0));for(var d=0;d<a.length-c;d++)this.num[d]=a[c+d]};l.prototype={get:function(a){return this.num[a]},getLength:function(){return this.num.length},multiply:function(a){for(var b=Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=m.gexp(m.glog(this.get(c))+m.glog(a.get(d)));return new l(b)},mod:function(a){if(0>this.getLength()-a.getLength())return this;for(var b=m.glog(this.get(0))-m.glog(a.get(0)),c=Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.num[d];for(d=0;d<a.getLength();d++)c[d]^=m.gexp(m.glog(a.get(d))+b);return new l(c,void 0).mod(a)}};var m={glog:function(a){if(1>a)throw Error("glog("+a+")");return m.LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;255<=a;)a-=255;return m.EXP_TABLE[a]},EXP_TABLE:Array(256),LOG_TABLE:Array(256)};for(var p=0;256>p;p++)m.EXP_TABLE[p]=15>p?1<<p:m.EXP_TABLE[p-4]^m.EXP_TABLE[p-3]^m.EXP_TABLE[p-2]^m.EXP_TABLE[p-1];for(p=0;255>p;p++)m.LOG_TABLE[m.EXP_TABLE[p]]=p;m.getErrorCorrectPolynomial=function(a){for(var b=new l([1],0),c=0;c<a;c++)b=b.multiply(new l([1,m.gexp(c)],0));return b};return f}();
+        var QRCodeNativo = function(){
+            function f(a,b){this.typeNumber=a;this.errorCorrectLevel=b;this.modules=null;this.moduleCount=0;this.dataCache=null;this.dataList=[]}
+            f.prototype={
+                addData:function(a){this.dataList.push(new g(a));this.dataCache=null},
+                isDark:function(a,b){if(0>a||this.moduleCount<=a||0>b||this.moduleCount<=b)throw Error(a+","+b);return this.modules[a][b]},
+                getModuleCount:function(){return this.moduleCount},
+                make:function(){this.makeImpl(!1,this.getBestMaskPattern())},
+                makeImpl:function(a,b){
+                    this.moduleCount=4*this.typeNumber+17;this.modules=Array(this.moduleCount);
+                    for(var c=0;c<this.moduleCount;c++){this.modules[c]=Array(this.moduleCount);for(var d=0;d<this.moduleCount;d++)this.modules[c][d]=null}
+                    this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);
+                    this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(a,b);7<=this.typeNumber&&this.setupTypeNumber(a);
+                    null==this.dataCache&&(this.dataCache=f.createData(this.typeNumber,this.errorCorrectLevel,this.dataList));this.mapData(this.dataCache,b)
+                },
+                setupPositionProbePattern:function(a,b){for(var c=-1;7>=c;c++)if(!(-1>a+c||this.moduleCount<=a+c))for(var d=-1;7>=d;d++)-1>b+d||this.moduleCount<=b+d||(this.modules[a+c][b+d]=0<=c&&6>=c&&(0==c||6==c)||0<=d&&6>=d&&(0==d||6==d)||2<=c&&4>=c&&2<=d&&4>=d?!0:!1)},
+                getBestMaskPattern:function(){for(var a=0,b=0,c=0;8<c;c++){this.makeImpl(!0,c);var d=h.getLostPoint(this);if(0==c||a>d)a=d,b=c}return b},
+                setupTimingPattern:function(){for(var a=8;a<this.moduleCount-8;a++)null==this.modules[a]&&(this.modules[a]=0==a%2);for(a=8;a<this.moduleCount-8;a++)null==this.modules[a]&&(this.modules[a]=0==a%2)},
+                setupPositionAdjustPattern:function(){for(var a=h.getPatternPosition(this.typeNumber),b=0;b<a.length;b++)for(var c=0;c<a.length;c++){var d=a[b],e=a[c];if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var k=-2;2>=k;k++)this.modules[d+g][e+k]=-2==g||2==g||-2==k||2==k||0==g&&0==k?!0:!1}},
+                setupTypeNumber:function(a){for(var b=h.getBCHTypeNumber(this.typeNumber),c=0;18>c;c++){var d=!a&&1==(b>>c&1);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}for(c=0;18>c;c++)d=!a&&1==(b>>c&1),this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d},
+                setupTypeInfo:function(a,b){for(var c=h.getBCHTypeInfo(this.errorCorrectLevel<<3|b),d=0;15>d;d++){var e=!a&&1==(c>>d&1);6>d?this.modules[d]=e:8>d?this.modules[d+1]=e:this.modules[this.moduleCount-15+d]=e}for(d=0;15>d;d++)e=!a&&1==(c>>d&1),8>d?this.modules[this.moduleCount-d-1]=e:9>d?this.modules[15-d-1+1]=e:this.modules[15-d-1]=e;this.modules[this.moduleCount-8]=!a},
+                mapData:function(a,b){for(var c=-1,d=this.moduleCount-1,e=7,f=0,g=this.moduleCount-1;0<g;g-=2)for(6==g&&g--;;){for(var h=0;2>h;h++)if(null==this.modules[d][g-h]){var l=!1;f<a.length&&(l=1==(a[f]>>e&1));h.getMask(b,d,g-h)&&(l=!l);this.modules[d][g-h]=l;e--;-1==e&&(f++,e=7)}d+=c;if(0>d||this.moduleCount<=d){d-=c;c=-c;break}}}}
+            };
+            f.createData=function(a,b,c){
+                b=h.getRSBlock(a,b);for(var d=new k,e=0;e<c.length;e++)var g=c[e],f=g.mode,l=g.data,m=k.getLengthInBits(f,a),d=d.append(f,4),d=d.append(l.length,m),d=g.write(d);
+                for(e=g=0;e<b.length;e++)g+=b[e].dataCount;if(d.getLengthInBits()>8*g)throw Error("Overflow: "+d.getLengthInBits()+">"+8*g);
+                for(d.getLengthInBits()+4<=8*g&&(d=d.append(0,4));0!=d.getLengthInBits()%8;)d=d.append(!1,1);
+                for(;;){if(d.getLengthInBits()>=8*g)break;d=d.append(236,8);if(d.getLengthInBits()>=8*g)break;d=d.append(17,8)}return f.createBytes(d,b)
+            };
+            f.createBytes=function(a,b){
+                for(var c=0,d=0,e=0,g=Array(b.length),f=Array(b.length),l=0;l<b.length;l++){
+                    var m=b[l].dataCount,s=b[l].totalCount-m,c=Math.max(c,m),d=Math.max(d,s);g[l]=Array(m);
+                    for(var p=0;p<g[l].length;p++)g[l][p]=255&a.buffer[p+e];e+=m;var q=new n(g[l],s);f[l]=Array(q.numDataWords+q.numCheckWords);
+                    for(p=0;p<q.numDataWords;p++)f[l][p]=q.dataWords[p];for(p=0;p<q.numCheckWords;p++)f[l][p+q.numDataWords]=q.ecWords[p]
+                }for(l=e=0;l<b.length;l++)e+=b[l].totalCount;var r=Array(e);c=0;for(p=0;p<c;p++)for(l=0;l<b.length;l++)p<g[l].length&&(r[c++]=g[l][p]);
+                for(p=0;p<d;p++)for(l=0;l<b.length;l++)p<f[l].length-g[l].length&&(r[c++]=f[l][p+g[l].length]);return r
+            };
+            var g=function(a){this.mode=4;this.data=a};g.prototype={getLength:function(){return this.data.length},write:function(a){for(var b=0;b<this.data.length;b++)a=a.append(this.data.charCodeAt(b),8);return a}};
+            var h={
+                PATTERN_POSITION_TABLE:[[],[],[],[],[],[],[],[6,22,38],[6,24,42]],G15:1335,G18:7973,G15_MASK:21522,
+                getBCHTypeInfo:function(a){for(var b=a<<10;0<=h.getBCHDigit(b)-h.getBCHDigit(h.G15);)b^=h.G15<<(h.getBCHDigit(b)-h.getBCHDigit(h.G15));return(a<<10|b)^h.G15_MASK},
+                getBCHTypeNumber:function(a){for(var b=a<<12;0<=h.getBCHDigit(b)-h.getBCHDigit(h.G18);)b^=h.G18<<(h.getBCHDigit(b)-h.getBCHDigit(h.G18));return a<<12|b},
+                getBCHDigit:function(a){for(var b=0;0!=a;)b++,a>>>=1;return b},
+                getPatternPosition:function(a){return h.PATTERN_POSITION_TABLE[a-1]},
+                getMask:function(a,b,c){switch(a){case 0:return 0==(b+c)%2;case 1:return 0==b%2;case 2:return 0==c%3;case 3:return 0==(b+c)%3;case 4:return 0==(Math.floor(b/2)+Math.floor(c/3))%2;case 5:return 0==b*c%2+b*c%3;case 6:return 0==(b*c%2+b*c%3)%2;case 7:return 0==(b*c%3+(b+c)%2)%2;default:throw Error("Mask:"+a);}},
+                getRSBlock:function(a,b){var c=void 0;switch(b){case 1:var d=[[26,19],[34,24],[42,29],[50,34],[60,38],[72,42],[84,46],[98,50]];break;case 0:d=[[26,16],[34,20],[42,24],[50,28],[60,32],[72,36],[84,40],[98,44]];break;case 3:d=[[26,13],[34,17],[42,20],[50,24],[60,26],[72,30],[84,32],[98,36]];break;case 2:d=[[26,9],[34,13],[42,15],[50,19],[60,22],[72,24],[84,28],[98,32]]}c=d[a-1];if(void 0!==c)return h.RSBlock.getRSBlocks(c[0],c[1]);throw Error("TypeNumber:"+a);},
+                getLostPoint:function(a){
+                    for(var b=a.getModuleCount(),c=0,d=0;d<b;d++)for(var e=0;e<b;e++){for(var g=0,f=a.isDark(d,e),h=-1;1>=h;h++)if(!(0>d+h||b<=d+h))for(var k=-1;1>=k;k++)0>e+k||b<=e+k||0==h&&0==k||f==a.isDark(d+h,e+k)&&g++;5<g&&(c+=3+g-5)}
+                    for(d=0;d<b-1;d++)for(e=0;e<b-1;e++){g=0;a.isDark(d,e)&&g++;a.isDark(d+1,e)&&g++;a.isDark(d,e+1)&&g++;a.isDark(d+1,e+1)&&g++;if(0==g||4==g)c+=3}
+                    for(d=0;d<b;d++)for(e=0;e<b-6;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);
+                    for(e=0;e<b;e++)for(d=0;d<b-6;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);
+                    for(e=g=0;e<b;e++)for(d=0;d<b;d++)a.isDark(d,e)&&g++;b=Math.abs(100*g/b/b-50)/5;return c+=10*b}
+            };
+            h.RSBlock=function(a,b){this.totalCount=a;this.dataCount=b};h.RSBlock.getRSBlocks=function(a,b){return[new h.RSBlock(a,b)]};
+            var k=function(){this.buffer=[];this.length=0};
+            k.prototype={
+                get:function(a){return 1==(this.buffer[Math.floor(a/8)]>>7-a%8&1)},
+                append:function(a,b){for(var c=0;c<b;c++)this.appendBit(1==(a>>b-1-c&1));return this},
+                getLengthInBits:function(){return this.length},
+                appendBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0);a&&(this.buffer[b]|=128>>this.length%8);this.length++}
+            };
+            k.getLengthInBits=function(a,b){if(1<=b&&10>b)switch(a){case 1:return 10;case 2:return 9;case 4:return 8;case 8:return 8}else if(27>b)switch(a){case 1:return 12;case 2:return 11;case 4:return 16;case 8:return 10}else if(41>b)switch(a){case 1:return 14;case 2:return 13;case 4:return 16;case 8:return 12}throw Error("Type:"+b);};
+            var n=function(a,b){this.numDataWords=a.length;this.numCheckWords=b;this.dataWords=a;this.ecWords=Array(b);this.make()};
+            n.prototype={
+                make:function(){var a=m.getErrorCorrectPolynomial(this.numCheckWords),b=new l(this.dataWords,a.getLength()-1).multiply(a);this.ecWords=Array(a.getLength()-1);for(var c=0;c<this.ecWords.length;c++){var d=c+b.getLength()-this.ecWords.length;this.ecWords[c]=0<=d?b.get(d):0}},
+                getAt:function(a){return a<this.numDataWords?this.dataWords[a]:this.ecWords[a-this.numDataWords]}
+            };
+            var l=function(a,b){for(var c=0;c<a.length&&0==a[c];)c++;this.num=Array(a.length-c+(b||0));for(var d=0;d<a.length-c;d++)this.num[d]=a[c+d]};
+            l.prototype={
+                get:function(a){return this.num[a]},getLength:function(){return this.num.length},
+                multiply:function(a){for(var b=Array(this.getLength()+a.getLength()-1),c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=m.gexp(m.glog(this.get(c))+m.glog(a.get(d)));return new l(b)},
+                mod:function(a){if(0>this.getLength()-a.getLength())return this;for(var b=m.glog(this.get(0))-m.glog(a.get(0)),c=Array(this.getLength()),d=0;d<this.getLength();d++)c[d]=this.num[d];for(d=0;d<a.getLength();d++)c[d]^=m.gexp(m.glog(a.get(d))+b);return new l(c,void 0).mod(a)}
+            };
+            var m={
+                glog:function(a){if(1>a)throw Error("glog("+a+")");return m.LOG_TABLE[a]},gexp:function(a){for(;0>a;)a+=255;for(;255<=a;)a-=255;return m.EXP_TABLE[a]},EXP_TABLE:Array(256),LOG_TABLE:Array(256)
+            };
+            for(var p=0;256>p;p++)m.EXP_TABLE[p]=15>p?1<<p:m.EXP_TABLE[p-4]^m.EXP_TABLE[p-3]^m.EXP_TABLE[p-2]^m.EXP_TABLE[p-1];for(p=0;255>p;p++)m.LOG_TABLE[m.EXP_TABLE[p]]=p;
+            m.getErrorCorrectPolynomial=function(a){for(var b=new l([1],0),c=0;c<a;c++)b=b.multiply(new l([1,m.gexp(c)],0));return b};
+            return f
+        }();
 
-// Acoplador do Motor Gráfico ao Canvas com Alinhamento e Quiet Zone Generosa
-function desenharQrBlindado(texto) {
-    try {
-        var canvas = document.getElementById("canvasQr");
-        if (!canvas) return;
-        var ctx = canvas.getContext("2d");
-        
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, 256, 256);
-        
-        // Instancia a versão 8 com correção de erro nível M (1)
-        var qr = new QRCodeNativo(8, 1); 
-        qr.addData(texto);
-        qr.make();
-        
-        var contagemModulos = qr.getModuleCount();
-        var modSize = 4; 
-        var margem = Math.floor((256 - (modSize * contagemModulos)) / 2);
-        
-        ctx.fillStyle = "#000000";
-        for (var r = 0; r < contagemModulos; r++) {
-            for (var c = 0; c < contagemModulos; c++) {
-                if (qr.isDark(r, c)) {
-                    ctx.fillRect(margem + (c * modSize), margem + (r * modSize), modSize, modSize);
+        // Acoplador do Motor Gráfico ao Canvas com Alinhamento Perfeito
+        function desenharQrBlindado(texto) {
+            try {
+                var canvas = document.getElementById("canvasQr");
+                if (!canvas) return;
+                var ctx = canvas.getContext("2d");
+                
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, 256, 256);
+                
+                // Versão 8 com correção nível M (1)
+                var qr = new QRCodeNativo(8, 1); 
+                qr.addData(texto);
+                qr.make();
+                
+                var contagemModulos = qr.getModuleCount();
+                var modSize = 4; 
+                var margem = Math.floor((256 - (modSize * contagemModulos)) / 2);
+                
+                ctx.fillStyle = "#000000";
+                for (var r = 0; r < contagemModulos; r++) {
+                    for (var c = 0; c < contagemModulos; c++) {
+                        if (qr.isDark(r, c)) {
+                            ctx.fillRect(margem + (c * modSize), margem + (r * modSize), modSize, modSize);
+                        }
+                    }
                 }
+                console.log("QR Code Matemático Real Renderizado!");
+            } catch (e) {
+                console.error("Falha:", e);
             }
         }
-        console.log("QR Code Matemático Real Renderizado no Canvas!");
-    } catch (e) {
-        console.error("Falha na geração do QR Code real:", e);
-    }
-}
 
-window.onload = function() {
-    codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
-    desenharQrBlindado(codigoPixGerado);
-};
+        window.onload = function() {
+            codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
+            desenharQrBlindado(codigoPixGerado);
+        };
     </script>
 </body>
 </html>
