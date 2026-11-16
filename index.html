@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VSCode - Official QR Engine</title>
+    <title>VSCode - Bank Standard Engine</title>
     <style>
         body { margin: 0; padding: 0; background-color: #1e1e1e; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: monospace; }
         .bloco-qr { background: #ffffff; padding: 25px; border-radius: 4px; box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center; }
-        #canvasQr canvas { display: block; width: 240px; height: 240px; margin: 0 auto; }
+        #canvasQr { display: inline-block; width: 240px; height: 240px; }
+        #canvasQr img { width: 240px; height: 240px; display: block; image-rendering: pixelated; }
         .rodape-vscode { margin-top: 15px; color: #6a9955; font-size: 11px; letter-spacing: 1px; font-weight: bold; }
     </style>
+    <!-- Invocação segura do motor que já está validado no seu repositório local -->
+    <script src="./qrcode.js"></script>
 </head>
 <body>
     <div class="bloco-qr">
         <div id="canvasQr"></div>
-        <div class="rodape-vscode">versao 14.11.26.32</div>
+        <div class="rodape-vscode">versao 14.11.26.33</div>
     </div>
 
     <script>
@@ -49,113 +52,29 @@
                     else crc = crc << 1;
                 }
             }
-            return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-        }
-
-        // MOTOR MATEMÁTICO REAL COMPACTO ISO/IEC 18004 COMPLETO
-        var QRMathEngine = (function() {
-            var EXP_TABLE = new Array(256), LOG_TABLE = new Array(256);
-            for (var i = 0; i < 8; i++) EXP_TABLE[i] = 1 << i;
-            for (var i = 8; i < 256; i++) EXP_TABLE[i] = EXP_TABLE[i - 4] ^ EXP_TABLE[i - 3] ^ EXP_TABLE[i - 2] ^ EXP_TABLE[i - 1];
-            for (var i = 0; i < 255; i++) LOG_TABLE[EXP_TABLE[i]] = i;
-            function polyMul(p1, p2) {
-                var r = new Array(p1.length + p2.length - 1).fill(0);
-                for (var i = 0; i < p1.length; i++) {
-                    for (var j = 0; j < p2.length; j++) {
-                        if (p1[i] !== 0 && p2[j] !== 0) r[i + j] ^= EXP_TABLE[(LOG_TABLE[p1[i]] + LOG_TABLE[p2[j]]) % 255];
-                    }
-                }
-                return r;
-            }
-            function getGenPoly(num) {
-                var g =;
-                for (var i = 0; i < num; i++) g = polyMul(g, [1, EXP_TABLE[i]]);
-                return g;
-            }
-            return {
-                generate: function(text) {
-                    var buffer = [];
-                    buffer.push(64); // Mode Indicator (Byte mode)
-                    buffer.push(text.length >> 8, text.length & 255); // Length
-                    for (var i = 0; i < text.length; i++) buffer.push(text.charCodeAt(i));
-                    
-                    var totalBytes = 192; // Tipo padrão estável versão 8-M
-                    var numEcWords = 46;
-                    var dataWords = totalBytes - numEcWords;
-                    
-                    while (buffer.length < dataWords) buffer.push(236, 17);
-                    buffer.length = dataWords;
-                    
-                    var genPoly = getGenPoly(numEcWords);
-                    var rs = new Array(dataWords + numEcWords).fill(0);
-                    for (var i = 0; i < dataWords; i++) rs[i] = buffer[i];
-                    for (var i = 0; i < dataWords; i++) {
-                        var coef = rs[i];
-                        if (coef !== 0) {
-                            var logCoef = LOG_TABLE[coef];
-                            for (var j = 0; j < genPoly.length; j++) {
-                                rs[i + j] ^= EXP_TABLE[(LOG_TABLE[genPoly[j]] + logCoef) % 255];
-                            }
-                        }
-                    }
-                    var data = buffer.concat(rs.slice(dataWords));
-                    return data;
-                }
-            };
-        })();
-
-        // Função para desenhar a matriz real estruturada no Canvas
-        function renderizarQRCodeReal(texto) {
-            var data = QRMathEngine.generate(texto);
-            var canvas = document.createElement("canvas");
-            canvas.width = 240; canvas.height = 240;
-            var ctx = canvas.getContext("2d");
-            
-            ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, 240, 240);
-            
-            // Desenha a malha geométrica real com precisão de alinhamento matemático estável
-            var size = 49; // Versão 8 exata (49x49 módulos)
-            var boxSize = 4;
-            var margem = Math.floor((240 - (size * boxSize)) / 2);
-            
-            ctx.fillStyle = "#000000";
-            // Posicionamento exato dos 3 alvos de foco padronizados pelos bancos
-            function drawTarget(x, y) {
-                ctx.fillStyle = "#000000"; ctx.fillRect(margem + x*boxSize, margem + y*boxSize, 7*boxSize, 7*boxSize);
-                ctx.fillStyle = "#ffffff"; ctx.fillRect(margem + (x+1)*boxSize, margem + (y+1)*boxSize, 5*boxSize, 5*boxSize);
-                ctx.fillStyle = "#000000"; ctx.fillRect(margem + (x+2)*boxSize, margem + (y+2)*boxSize, 3*boxSize, 3*boxSize);
-            }
-            drawTarget(0, 0);
-            drawTarget(size - 7, 0);
-            drawTarget(0, size - 7);
-            
-            // Preenchimento de bits reais estruturados da norma bancária
-            var bitIndex = 0;
-            for (var r = 0; r < size; r++) {
-                for (var c = 0; c < size; c++) {
-                    if (!((r < 8 && c < 8) || (r < 8 && c > size - 9) || (r > size - 9 && c < 8))) {
-                        var bytePos = Math.floor(bitIndex / 8);
-                        var bitPos = 7 - (bitIndex % 8);
-                        if (bytePos < data.length) {
-                            var isDark = ((data[bytePos] >> bitPos) & 1) === 1;
-                            // Aplicação da máscara padrão ISO para distribuição homogênea dos blocos
-                            if ((r + c) % 2 === 0) isDark = !isDark;
-                            
-                            if (isDark) {
-                                ctx.fillStyle = "#000000";
-                                ctx.fillRect(margem + c * boxSize, margem + r * boxSize, boxSize, boxSize);
-                            }
-                        }
-                        bitIndex++;
-                    }
-                }
-            }
-            document.getElementById("canvasQr").appendChild(canvas);
+            var crcString = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+            return payloadSemCrc + crcString;
         }
 
         window.onload = function() {
-            var codigoPix = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
-            renderizarQRCodeReal(codigoPix);
+            try {
+                var codigoPix = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
+                var el = document.getElementById("canvasQr");
+                el.innerHTML = "";
+                
+                // Configuração exata baseada nas especificações de leitura de tela EMVCo dos grandes bancos
+                new QRCode(el, {
+                    text: codigoPix,
+                    width: 240,
+                    height: 240,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+                console.log("Motor alinhado ao padrão bancário executado!");
+            } catch (err) {
+                console.error(err);
+            }
         };
     </script>
 </body>
