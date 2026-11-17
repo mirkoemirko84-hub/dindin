@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VSCode - Official Pix 2026 Engine</title>
-    <!-- Carrega o arquivo qrcode.js que já está na pasta do seu repositório -->
     <script src="./qrcode.js"></script>
     <style>
         body { margin: 0; padding: 0; background-color: #1e1e1e; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: monospace; }
         .bloco-qr { background: #ffffff; padding: 28px; border-radius: 6px; box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center; }
         
-        /* Margem branca generosa (Quiet Zone) obrigatória para leitura rápida */
-        #qrcode-oficial { display: flex; justify-content: center; align-items: center; padding: 16px; background-color: #ffffff; min-width: 260px; min-height: 260px; }
-        #qrcode-oficial img, #qrcode-oficial canvas { display: block; margin: 0 auto; width: 260px !important; height: 260px !important; image-rendering: crisp-edges; image-rendering: pixelated; }
+        #qrcode-oficial { display: flex; justify-content: center; align-items: center; padding: 14px; background-color: #ffffff; }
+        #qrcode-oficial svg { display: block; width: 250px; height: 250px; shape-rendering: crispEdges; }
         
         .btn-copiar { margin-top: 15px; padding: 12px 15px; font-size: 12px; font-weight: bold; background-color: #6a9955; color: #ffffff; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; width: 100%; font-family: monospace; }
         .btn-copiar:hover { background-color: #537a43; }
@@ -23,7 +21,7 @@
     <div class="bloco-qr">
         <div id="qrcode-oficial"></div>
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-vscode">versao 17.11.26.43</div>
+        <div class="rodape-vscode">versao 17.11.26.45</div>
     </div>
 
     <script>
@@ -31,7 +29,6 @@
         var CHAVE_PIX   = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
         var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
         var CIDADE_LOJA = "MAIRIPORA";
-
         function montarPixUniversal(chave, nome, cidade) {
             var chLimpa = chave.trim();
             var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
@@ -78,21 +75,7 @@
 
         window.onload = function() {
             codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
-            var container = document.getElementById("qrcode-oficial");
-            container.innerHTML = "";
-
-            if (typeof QRCode !== "undefined") {
-                new QRCode(container, {
-                    text: codigoPixGerado,
-                    width: 260,
-                    height: 260,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.L
-                });
-            } else {
-                container.innerHTML = "<p style='color:red;font-size:12px;'>Erro: qrcode.js não carregou</p>";
-            }
+            document.getElementById("qrcode-oficial").innerHTML = QREngine.toSVG(codigoPixGerado);
         };
     </script>
 </body>
