@@ -19,8 +19,8 @@ const QREngine = (function() {
         return r;
     }
 
-    function rsGenPoly(nsym) {
-        let g = new Uint8Array();
+       function rsGenPoly(nsym) {
+        let g = new Uint8Array([1]);
         for (let i = 0; i < nsym; i++) {
             g = polyMul(g, new Uint8Array([1, EXP[i]]));
         }
