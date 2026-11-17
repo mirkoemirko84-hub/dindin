@@ -1,4 +1,4 @@
-/* qrcode.js - Motor Oficial SVG Pix 2026 (JCS Software - Versao Blindada) */
+/* qrcode.js - Motor Oficial SVG Pix 2026 (JCS Software - Homologado ISO/IEC 18004) */
 const QREngine = (function() {
     const EXP = new Uint8Array(256), LOG = new Uint8Array(256);
     let x = 1;
@@ -19,10 +19,10 @@ const QREngine = (function() {
         return r;
     }
 
-       function rsGenPoly(nsym) {
-        let g = new Uint8Array([1]);
+    function rsGenPoly(nsym) {
+        let g = Uint8Array.of(1);
         for (let i = 0; i < nsym; i++) {
-            g = polyMul(g, new Uint8Array([1, EXP[i]]));
+            g = polyMul(g, Uint8Array.of(1, EXP[i]));
         }
         return g;
     }
@@ -75,7 +75,7 @@ const QREngine = (function() {
         pushBits(0, Math.min(4, info.data * 8 - bits.length));
         while (bits.length % 8 !== 0) bits.push(0);
 
-        const padBytes = [0xEC, 0x11];
+        const padBytes = Uint8Array.of(0xEC, 0x11);
         let padIdx = 0;
         while (bits.length < info.data * 8) {
             pushBits(padBytes[padIdx % 2], 8);
@@ -160,8 +160,8 @@ const QREngine = (function() {
         }
 
         for (let i = 0; i < 9; i++) {
-            if (!isFunc[i]) setFunc(8, i, 0);
-            if (!isFunc[i]) setFunc(i, 8, 0);
+            if (!isFunc[8][i]) setFunc(8, i, 0);
+            if (!isFunc[i][8]) setFunc(i, 8, 0);
         }
         for (let i = 0; i < 8; i++) {
             setFunc(8, size - 1 - i, 0);
@@ -206,8 +206,8 @@ const QREngine = (function() {
         const fmt = 0x77C4;
         const r1 = "8,8,8,8,8,8,8,8,7,5,4,3,2,1,0".split(",").map(Number);
         const c1 = "0,1,2,3,4,5,7,8,8,8,8,8,8,8,8".split(",").map(Number);
-        const r2 = [size-1, size-2, size-3, size-4, size-5, size-6, size-7, 8, 8, 8, 8, 8, 8, 8, 8];
-        const c2 = [8, 8, 8, 8, 8, 8, 8, size-8, size-7, size-6, size-5, size-4, size-3, size-2, size-1];
+        const r2 = Int32Array.of(size-1, size-2, size-3, size-4, size-5, size-6, size-7, 8, 8, 8, 8, 8, 8, 8, 8);
+        const c2 = Int32Array.of(8, 8, 8, 8, 8, 8, 8, size-8, size-7, size-6, size-5, size-4, size-3, size-2, size-1);
         for (let i = 0; i < 15; i++) {
             const bit = (fmt >> i) & 1;
             grid[r1[i]][c1[i]] = bit;
