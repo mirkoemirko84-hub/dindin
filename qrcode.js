@@ -1,4 +1,4 @@
-/* qrcode.js - Motor Oficial SVG Pix 2026 (JCS Software - Corrigido) */
+/* qrcode.js - Motor Oficial SVG Pix 2026 (JCS Software - Versao Blindada) */
 const QREngine = (function() {
     const EXP = new Uint8Array(256), LOG = new Uint8Array(256);
     let x = 1;
@@ -20,7 +20,7 @@ const QREngine = (function() {
     }
 
     function rsGenPoly(nsym) {
-        let g = new Uint8Array([1]);
+        let g = new Uint8Array();
         for (let i = 0; i < nsym; i++) {
             g = polyMul(g, new Uint8Array([1, EXP[i]]));
         }
@@ -43,16 +43,16 @@ const QREngine = (function() {
     }
 
     const VERSIONS = {
-        1:  { data: 19,  ec: 7,  b1c: 1, b1d: 19,  b2c: 0, b2d: 0,  align: [] },
-        2:  { data: 34,  ec: 10, b1c: 1, b1d: 34,  b2c: 0, b2d: 0,  align: [6, 18] },
-        3:  { data: 55,  ec: 15, b1c: 1, b1d: 55,  b2c: 0, b2d: 0,  align: [6, 22] },
-        4:  { data: 80,  ec: 20, b1c: 1, b1d: 80,  b2c: 0, b2d: 0,  align: [6, 26] },
-        5:  { data: 108, ec: 26, b1c: 1, b1d: 108, b2c: 0, b2d: 0,  align: [6, 30] },
-        6:  { data: 136, ec: 18, b1c: 2, b1d: 68,  b2c: 0, b2d: 0,  align: [6, 34] },
-        7:  { data: 156, ec: 20, b1c: 2, b1d: 78,  b2c: 0, b2d: 0,  align: [6, 22, 38] },
-        8:  { data: 194, ec: 24, b1c: 2, b1d: 97,  b2c: 0, b2d: 0,  align: [6, 24, 42] },
-        9:  { data: 232, ec: 30, b1c: 2, b1d: 116, b2c: 0, b2d: 0,  align: [6, 26, 46] },
-        10: { data: 274, ec: 18, b1c: 2, b1d: 68,  b2c: 2, b2d: 69, align: [6, 28, 50] }
+        1:  { data: 19,  ec: 7,  b1c: 1, b1d: 19,  b2c: 0, b2d: 0,  al: "" },
+        2:  { data: 34,  ec: 10, b1c: 1, b1d: 34,  b2c: 0, b2d: 0,  al: "6,18" },
+        3:  { data: 55,  ec: 15, b1c: 1, b1d: 55,  b2c: 0, b2d: 0,  al: "6,22" },
+        4:  { data: 80,  ec: 20, b1c: 1, b1d: 80,  b2c: 0, b2d: 0,  al: "6,26" },
+        5:  { data: 108, ec: 26, b1c: 1, b1d: 108, b2c: 0, b2d: 0,  al: "6,30" },
+        6:  { data: 136, ec: 18, b1c: 2, b1d: 68,  b2c: 0, b2d: 0,  al: "6,34" },
+        7:  { data: 156, ec: 20, b1c: 2, b1d: 78,  b2c: 0, b2d: 0,  al: "6,22,38" },
+        8:  { data: 194, ec: 24, b1c: 2, b1d: 97,  b2c: 0, b2d: 0,  al: "6,24,42" },
+        9:  { data: 232, ec: 30, b1c: 2, b1d: 116, b2c: 0, b2d: 0,  al: "6,26,46" },
+        10: { data: 274, ec: 18, b1c: 2, b1d: 68,  b2c: 2, b2d: 69, al: "6,28,50" }
     };
 
     function encode(text) {
@@ -141,7 +141,7 @@ const QREngine = (function() {
         drawFinder(0, size - 7);
         drawFinder(size - 7, 0);
 
-        const al = info.align;
+        const al = info.al ? info.al.split(",").map(Number) : [];
         for (let i = 0; i < al.length; i++) {
             for (let j = 0; j < al.length; j++) {
                 if ((i === 0 && j === 0) || (i === 0 && j === al.length - 1) || (i === al.length - 1 && j === 0)) continue;
@@ -160,8 +160,8 @@ const QREngine = (function() {
         }
 
         for (let i = 0; i < 9; i++) {
-            if (!isFunc[8][i]) setFunc(8, i, 0);
-            if (!isFunc[i][8]) setFunc(i, 8, 0);
+            if (!isFunc[i]) setFunc(8, i, 0);
+            if (!isFunc[i]) setFunc(i, 8, 0);
         }
         for (let i = 0; i < 8; i++) {
             setFunc(8, size - 1 - i, 0);
@@ -204,8 +204,8 @@ const QREngine = (function() {
         }
 
         const fmt = 0x77C4;
-        const r1 =;
-        const c1 =;
+        const r1 = "8,8,8,8,8,8,8,8,7,5,4,3,2,1,0".split(",").map(Number);
+        const c1 = "0,1,2,3,4,5,7,8,8,8,8,8,8,8,8".split(",").map(Number);
         const r2 = [size-1, size-2, size-3, size-4, size-5, size-6, size-7, 8, 8, 8, 8, 8, 8, 8, 8];
         const c2 = [8, 8, 8, 8, 8, 8, 8, size-8, size-7, size-6, size-5, size-4, size-3, size-2, size-1];
         for (let i = 0; i < 15; i++) {
