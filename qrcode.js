@@ -205,16 +205,16 @@ const QREngine = (function() {
             dir = -dir;
         }
 
-        const fmt = 0x77C4;
+                const fmt = 0x77C4;
         const r1 = "8,8,8,8,8,8,8,8,7,5,4,3,2,1,0".split(",").map(Number);
         const c1 = "0,1,2,3,4,5,7,8,8,8,8,8,8,8,8".split(",").map(Number);
         const r2 = Int32Array.of(size-1, size-2, size-3, size-4, size-5, size-6, size-7, 8, 8, 8, 8, 8, 8, 8, 8);
         const c2 = Int32Array.of(8, 8, 8, 8, 8, 8, 8, size-8, size-7, size-6, size-5, size-4, size-3, size-2, size-1);
         for (let i = 0; i < 15; i++) {
-            const bit = (fmt >> i) & 1;
+            const bit = (fmt >> (14 - i)) & 1;
             grid[r1[i] * size + c1[i]] = bit;
             grid[r2[i] * size + c2[i]] = bit;
-        }
+       }
 
         return { grid: grid, size: size };
     }
