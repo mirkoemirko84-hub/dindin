@@ -1,127 +1,311 @@
-/* qrcode.js - Motor de Renderização Pix JCS Software */
-var QRCode;
-!function(){
-    function a(a){this.mode=4,this.data=a}
-    function b(a,b){this.typeNumber=a,this.errorCorrectLevel=b,this.modules=null,this.moduleCount=0,this.dataCache=null,this.dataList=[]}
-    a.prototype={getLength:function(){return this.data.length},write:function(a){for(var b=0;b<this.data.length;b++)a.put(this.data.charCodeAt(b),8)}};
-    b.prototype={
-        addData:function(b){var c=new a(b);this.dataList.push(c),this.dataCache=null},
-        isDark:function(a,b){if(a<0||this.moduleCount<=a||b<0||this.moduleCount<=b)return!1;return this.modules[a][b]},
-        getModuleCount:function(){return this.moduleCount},
-        make:function(){this.makeImpl(!1,this.getBestPattern())},
-        makeImpl:function(a,c){
-            this.moduleCount=4*this.typeNumber+17;this.modules=new Array(this.moduleCount);
-            for(var d=0;d<this.moduleCount;d++){this.modules[d]=new Array(this.moduleCount);for(var e=0;e<this.moduleCount;e++)this.modules[d][e]=null}
-            this.setupPositionProbePattern(0,0);this.setupPositionProbePattern(this.moduleCount-7,0);this.setupPositionProbePattern(0,this.moduleCount-7);
-            this.setupPositionAdjustPattern();this.setupTimingPattern();this.setupTypeInfo(a,c);
-            if(this.typeNumber>=7)this.setupTypeNumber(a);
-            if(null==this.dataCache)this.dataCache=b.createData(this.typeNumber,this.errorCorrectLevel,this.dataList);
-            this.mapData(this.dataCache,c)
-        },
-        setupPositionProbePattern:function(a,b){
-            for(var c=-1;7>=c;c++)if(!(a+c<-1||this.moduleCount<=a+c))
-            for(var d=-1;7>=d;d++)b+d<-1||this.moduleCount<=b+d||(c>=0&&6>=c&&(0==d||6==d)||d>=0&&6>=d&&(0==c||6==c)||c>=2&&4>=c&&d>=2&&4>=d?this.modules[a+c][b+d]=!0:this.modules[a+c][b+d]=!1)
-        },
-        getBestPattern:function(){for(var a=0,b=0,c=0;8>c;c++){this.makeImpl(!0,c);var d=f.getLostPoint(this);(0==c||a>d)&&(a=d,b=c)}return b},
-        setupTimingPattern:function(){for(var a=8;this.moduleCount-8>a;a++)null==this.modules[a][6]&&(this.modules[a][6]=a%2==0),null==this.modules[6][a]&&(this.modules[6][a]=a%2==0)},
-        setupPositionAdjustPattern:function(){
-            var a=f.getPatternPosition(this.typeNumber);
-            for(var b=0;b<a.length;b++)for(var c=0;c<a.length;c++){
-                var d=a[b],e=a[c];
-                if(null==this.modules[d][e])for(var g=-2;2>=g;g++)for(var h=-2;2>=h;h++)0==g||6==g||0==h||6==h||0==g&&0==h?this.modules[d+g][e+h]=!0:this.modules[d+g][e+h]=!1
+/* qrcode.js - Motor Oficial SVG Pix 2026 (JCS Software) */
+const QREngine = (function() {
+    const EXP = new Uint8Array(256), LOG = new Uint8Array(256);
+    let x = 1;
+    for (let i = 0; i < 255; i++) {
+        EXP[i] = x;
+        LOG[x] = i;
+        x = (x << 1) ^ (x & 128 ? 0x11d : 0);
+    }
+    for (let i = 255; i < 256; i++) EXP[i] = EXP[i - 255];
+
+    function polyMul(p, q) {
+        const r = new Uint8Array(p.length + q.length - 1);
+        for (let j = 0; j < q.length; j++) {
+            for (let i = 0; i < p.length; i++) {
+                r[i + j] ^= EXP[(LOG[p[i]] + LOG[q[j]]) % 255];
             }
-        },
-        setupTypeInfo:function(a,b){
-            var c=this.errorCorrectLevel<<3|b,d=f.getBCHTypeInfo(c);
-            for(var e=0;15>e;e++){var g=!a&&1==(d>>e&1);6>e?this.modules[e][8]=g:8>e?this.modules[e+1][8]=g:this.modules[this.moduleCount-15+e][8]=g}
-            for(var e=0;15>e;e++){var g=!a&&1==(d>>e&1);8>e?this.modules[8][this.moduleCount-e-1]=g:9>e?this.modules[8][15-e-1+1]=g:this.modules[8][15-e-1]=g}
-            this.modules[this.moduleCount-8][8]=!a
-        },
-        setupTypeNumber:function(a){
-            var b=f.getBCHTypeNumber(this.typeNumber);
-            for(var c=0;18>c;c++){var d=!a&&1==(b>>c&1);this.modules[Math.floor(c/3)][c%3+this.moduleCount-8-3]=d}
-            for(var c=0;18>c;c++){var d=!a&&1==(b>>c&1);this.modules[c%3+this.moduleCount-8-3][Math.floor(c/3)]=d}
-        },
-        mapData:function(a,b){
-            for(var c=-1,d=this.moduleCount-1,e=7,g=0,h=this.moduleCount-1;h>0;h-=2){
-                if(6==h)h--;
-                for(;;){
-                    for(var i=0;2>i;i++)if(null==this.modules[d][h-i]){var j=!1;g<a.length&&(j=1==(a[g]>>>e&1));var k=f.getMask(b,d,h-i);k&&(j=!j),this.modules[d][h-i]=j,e--,-1==e&&(g++,e=7)}
-                    d+=c;if(d<0||this.moduleCount<=d){d-=c;c=-c;break}
+        }
+        return r;
+    }
+
+    function rsGenPoly(nsym) {
+        let g = new Uint8Array();
+        for (let i = 0; i < nsym; i++) {
+            g = polyMul(g, new Uint8Array([1, EXP[i]]));
+        }
+        return g;
+    }
+
+    function rsEncode(data, nsym) {
+        const gen = rsGenPoly(nsym);
+        const res = new Uint8Array(data.length + nsym);
+        res.set(data);
+        for (let i = 0; i < data.length; i++) {
+            const coef = res[i];
+            if (coef !== 0) {
+                for (let j = 0; j < gen.length; j++) {
+                    res[i + j] ^= EXP[(LOG[gen[j]] + LOG[coef]) % 255];
                 }
             }
         }
-    };
-    b.createData=function(a,c,d){
-        var g=e.getRSBlocks(a,c),h=new mainBuffer;
-        for(var i=0;i<d.length;i++){var j=d[i];h.put(j.mode,4),h.put(j.getLength(),f.getLengthInBits(j.mode,a)),j.write(h)}
-        var k=0;for(var i=0;i<g.length;i++)k+=g[i].dataCount;
-        if(h.getLengthInBits()>8*k)throw new Error("code length overflow. ("+h.getLengthInBits()+">"+8*k+")");
-        for(h.getLengthInBits()+4<=8*k&&h.put(0,4);h.getLengthInBits()%8!=0;)h.putBit(!1);
-        for(;;){if(h.getLengthInBits()>=8*k)break;if(h.put(236,8),h.getLengthInBits()>=8*k)break;h.put(17,8)}
-        return b.createBytes(h,g)
-    };
-    b.createBytes=function(a,b){
-        for(var c=0,d=0,e=0,g=new Array(b.length),h=new Array(b.length),i=0;i<b.length;i++){
-            var j=b[i].dataCount,k=b[i].totalCount-j;d=Math.max(d,j),e=Math.max(e,k),g[i]=new Array(j);
-            for(var l=0;l<g[i].length;l++)g[i][l]=255&a.buffer[l+c];c+=j;
-            var m=f.getErrorCorrectPolynomial(k),n=new rsPoly(g[i],k),o=n.mod(m);h[i]=new Array(m.getLength()-1);
-            for(var l=0;l<h[i].length;l++){var p=l+o.getLength()-h[i].length;h[i][l]=p>=0?o.get(p):0}
+        return res.slice(data.length);
+    }
+
+    const VERSIONS = [
+        null,
+        { total: 26,  data: 19,  ec: 7,  blocks: [], align: [] },
+        { total: 44,  data: 34,  ec: 10, blocks: [], align: },
+        { total: 70,  data: 55,  ec: 15, blocks: [], align: },
+        { total: 100, data: 80,  ec: 20, blocks: [], align: },
+        { total: 134, data: 108, ec: 26, blocks: [], align: },
+        { total: 172, data: 136, ec: 18, blocks: [], align: },
+        { total: 196, data: 156, ec: 20, blocks: [], align: },
+        { total: 242, data: 194, ec: 24, blocks: [], align: },
+        { total: 292, data: 232, ec: 30, blocks: [], align: },
+        { total: 346, data: 274, ec: 18, blocks: [,], align: }
+    ];
+
+    function encode(text) {
+        const bytes = new TextEncoder().encode(text);
+        let ver = 1;
+        for (; ver <= 10; ver++) {
+            const cap = VERSIONS[ver].data - (ver < 10 ? 2 : 3);
+            if (bytes.length <= cap) break;
         }
-        var q=0;for(var l=0;l<b.length;l++)q+=b[l].totalCount;
-        for(var r=new Array(q),s=0,l=0;d>l;l++)for(var i=0;i<b.length;i++)l<g[i].length&&(r[s++]=g[i][l]);
-        for(var l=0;e>l;l++)for(var i=0;i<b.length;i++)l<h[i].length&&(r[s++]=h[i][l]);
-        return r
-    };
-    var e={RS_BLOCK_TABLE:[[26,19],[38,34],[67,55],[96,80],[134,104],[172,139],[229,177],[287,230],[363,283],[441,351]]};
-    e.getRSBlocks=function(a,b){var c=e.getRsBlockTable(a,b);var d=[];for(var f=0;f<c.length/2;f++)d.push(new e(c[2*f],c[2*f+1]));return d};
-    e.getRsBlockTable=function(a,b){return [1,e.RS_BLOCK_TABLE[a-1][0],e.RS_BLOCK_TABLE[a-1][1]]};
-    function e(a,b){this.dataCount=b,this.totalCount=a}
-    var f={PATTERN_POSITION_TABLE:[[],[6,24],[6,28],[6,32],[6,36],[6,40],[6,22,38],[6,24,42],[6,26,46],[6,28,50]],G15:1335,G18:7973,G15_MASK:21522};
-    f.getBCHTypeInfo=function(a){for(var b=a<<10;f.getBCHDigit(b)-f.getBCHDigit(f.G15)>=0;)b^=f.G15<<(f.getBCHDigit(b)-f.getBCHDigit(f.G15));return(a<<10|b)^f.G15_MASK};
-    f.getBCHTypeNumber=function(a){for(var b=a<<12;f.getBCHDigit(b)-f.getBCHDigit(f.G18)>=0;)b^=f.G18<<(f.getBCHDigit(b)-f.getBCHDigit(f.G18));return a<<12|b};
-    f.getBCHDigit=function(a){for(var b=0;0!=a;)b++,a>>>=1;return b};
-    f.getPatternPosition=function(a){return f.PATTERN_POSITION_TABLE[a-1]};
-    f.getMask=function(a,b,c){switch(a){case 0:return(b+c)%2==0;case 1:return b%2==0;case 2:return c%3==0;case 3:return(b+c)%3==0;case 4:return(Math.floor(b/2)+Math.floor(c/3))%2==0;case 5:return b*c%2+b*c%3==0;case 6:return(b*c%2+b*c%3)%2==0;case 7:return(b*c%3+(b+c)%2)%2==0;default:throw new Error("bad maskPattern:"+a)}};
-    f.getErrorCorrectPolynomial=function(a){for(var b=new rsPoly([1],0),c=0;a>c;c++)b=b.multiply(new rsPoly([1,mathGalois.gexp(c)],0));return b};
-    f.getLengthInBits=function(a,b){if(b>=1&&10>b)switch(a){case 4:return 8;default:return 8}else return 16};
-    f.getLostPoint=function(a){
-        var b=a.getModuleCount(),c=0;
-        for(var d=0;b>d;d++)for(var e=0;b>e;e++){var f=0,g=a.isDark(d,e);for(var h=-1;1>=h;h++)if(!(d+h<0||b<=d+h))for(var i=-1;1>=i;i++)e+i<0||b<=e+i||(0!=h||0!=i)&&g==a.isDark(d+h,e+i)&&f++;f>5&&(c+=3+f-5)}
-        for(var d=0;b-1>d;d++)for(var e=0;b-1>e;e++){var j=0;a.isDark(d,e)&&j++,a.isDark(d+1,e)&&j++,a.isDark(d,e+1)&&j++,a.isDark(d+1,e+1)&&j++,(0==j||4==j)&&(c+=3)}
-        for(var d=0;b>d;d++)for(var e=0;b-6>e;e++)a.isDark(d,e)&&!a.isDark(d,e+1)&&a.isDark(d,e+2)&&a.isDark(d,e+3)&&a.isDark(d,e+4)&&!a.isDark(d,e+5)&&a.isDark(d,e+6)&&(c+=40);
-        for(var e=0;b>e;e++)for(var d=0;b-6>d;d++)a.isDark(d,e)&&!a.isDark(d+1,e)&&a.isDark(d+2,e)&&a.isDark(d+3,e)&&a.isDark(d+4,e)&&!a.isDark(d+5,e)&&a.isDark(d+6,e)&&(c+=40);
-        var k=0;for(var e=0;b>e;e++)for(var d=0;b>d;d++)a.isDark(d,e)&&k++;var l=Math.abs(100*k/b/b-50)/5;return c+=10*l
-    };
-    var mathGalois={
-        glog:function(a){if(1>a)throw new Error("glog("+a+")");return mathGalois.LOG_TABLE[a]},
-        gexp:function(a){for(;0>a;)a+=255;for(;a>=255;)a-=255;return mathGalois.EXP_TABLE[a]},
-        EXP_TABLE:new Array(256),LOG_TABLE:new Array(256)
-    };
-    for(var r=0;8>r;r++)mathGalois.EXP_TABLE[r]=1<<r;for(var r=8;256>r;r++)mathGalois.EXP_TABLE[r]=mathGalois.EXP_TABLE[r-4]^mathGalois.EXP_TABLE[r-5]^mathGalois.EXP_TABLE[r-6]^mathGalois.EXP_TABLE[r-8];
-    for(var r=0;255>r;r++)mathGalois.LOG_TABLE[mathGalois.EXP_TABLE[r]]=r;
-    function rsPoly(a,b){if(void 0==a.length)throw new Error(a.length+"/"+b);var c=0;while(c<a.length&&0==a[c])c++;this.num=new Array(a.length-c+b);for(var d=0;d<a.length-c;d++)this.num[d]=a[d+c]}
-    rsPoly.prototype={
-        get:function(a){return this.num[a]},getLength:function(){return this.num.length},
-        multiply:function(a){
-            var b=new Array(this.getLength()+a.getLength()-1);
-            for(var c=0;c<this.getLength();c++)for(var d=0;d<a.getLength();d++)b[c+d]^=mathGalois.gexp(mathGalois.glog(this.get(c))+mathGalois.glog(a.get(d)));
-            return new rsPoly(b,0)
-        },
-        mod:function(a){
-            if(this.getLength()-a.getLength()<0)return this;
-            var b=mathGalois.glog(this.get(0))-mathGalois.glog(a.get(0)),c=new Array(this.getLength());
-            for(var d=0;d<this.getLength();d++)c[d]=this.get(d);
-            for(var d=0;d<a.getLength();d++)c[d]^=mathGalois.gexp(mathGalois.glog(a.get(d))+b);
-            return new rsPoly(c,0).mod(a)
+        const info = VERSIONS[ver];
+        const size = ver * 4 + 17;
+
+        const bits = [];
+        const pushBits = (val, len) => {
+            for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1);
+        };
+        pushBits(0b0100, 4);
+        pushBits(bytes.length, ver < 10 ? 8 : 16);
+        for (const b of bytes) pushBits(b, 8);
+        pushBits(0, Math.min(4, info.data * 8 - bits.length));
+        while (bits.length % 8 !== 0) bits.push(0);
+
+        const padBytes = [0xEC, 0x11];
+        let padIdx = 0;
+        while (bits.length < info.data * 8) {
+            pushBits(padBytes[padIdx % 2], 8);
+            padIdx++;
+        }
+
+        const dataBytes = new Uint8Array(info.data);
+        for (let i = 0; i < info.data; i++) {
+            let b = 0;
+            for (let j = 0; j < 8; j++) b = (b << 1) | bits[i * 8 + j];
+            dataBytes[i] = b;
+        }
+
+        const dBlocks = [], eBlocks = [];
+        let offset = 0;
+        for (const [count, dLen] of info.blocks) {
+            for (let c = 0; c < count; c++) {
+                const slice = dataBytes.slice(offset, offset + dLen);
+                offset += dLen;
+                dBlocks.push(slice);
+                eBlocks.push(rsEncode(slice, info.ec));
+            }
+        }
+
+        const finalCodewords = [];
+        const maxD = Math.max(...dBlocks.map(b => b.length));
+        for (let i = 0; i < maxD; i++) {
+            for (const b of dBlocks) if (i < b.length) finalCodewords.push(b[i]);
+        }
+        for (let i = 0; i < info.ec; i++) {
+            for (const b of eBlocks) finalCodewords.push(b[i]);
+        }
+
+        const grid = Array.from({ length: size }, () => Array(size).fill(null));
+        const isFunc = Array.from({ length: size }, () => Array(size).fill(false));
+
+        const setFunc = (r, c, val) => {
+            if (r >= 0 && r < size && c >= 0 && c < size) {
+                grid[r][c] = val ? 1 : 0;
+                isFunc[r][c] = true;
+            }
+        };
+
+        const drawFinder = (r0, c0) => {
+            for (let r = -1; r <= 7; r++) {
+                for (let c = -1; c <= 7; c++) {
+                    const on = (r >= 0 && r <= 6 && (c === 0 || c === 6)) ||
+                               (c >= 0 && c <= 6 && (r === 0 || r === 6)) ||
+                               (r >= 2 && r <= 4 && c >= 2 && c <= 4);
+                    setFunc(r0 + r, c0 + c, on);
+                }
+            }
+        };
+        drawFinder(0, 0);
+        drawFinder(0, size - 7);
+        drawFinder(size - 7, 0);
+
+        const al = info.align;
+        for (let i = 0; i < al.length; i++) {
+            for (let j = 0; j < al.length; j++) {
+                if ((i === 0 && j === 0) || (i === 0 && j === al.length - 1) || (i === al.length - 1 && j === 0)) continue;
+                const r0 = al[i], c0 = al[j];
+                for (let r = -2; r <= 2; r++) {
+                    for (let c = -2; c <= 2; c++) {
+                        setFunc(r0 + r, c0 + c, Math.max(Math.abs(r), Math.abs(c)) !== 1);
+                    }
+                }
+            }
+        }
+
+        for (let i = 8; i < size - 8; i++) {
+            setFunc(6, i, i % 2 === 0);
+            setFunc(i, 6, i % 2 === 0);
+        }
+
+        for (let i = 0; i < 9; i++) {
+            if (!isFunc[i]) setFunc(8, i, 0);
+            if (!isFunc[i]) setFunc(i, 8, 0);
+        }
+        for (let i = 0; i < 8; i++) {
+            setFunc(8, size - 1 - i, 0);
+            setFunc(size - 1 - i, 8, 0);
+        }
+        setFunc(size - 8, 8, 1);
+
+        if (ver >= 7) {
+            let rem = ver;
+            for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >> 11) * 0x1F25);
+            const vBits = (ver << 12) | rem;
+            for (let i = 0; i < 18; i++) {
+                const bit = (vBits >> i) & 1;
+                setFunc(Math.floor(i / 3), size - 11 + (i % 3), bit);
+                setFunc(size - 11 + (i % 3), Math.floor(i / 3), bit);
+            }
+        }
+
+        let bitIdx = 0;
+        const totalBits = finalCodewords.length * 8;
+        let dir = -1;
+        for (let col = size - 1; col > 0; col -= 2) {
+            if (col === 6) col--;
+            for (let i = 0; i < size; i++) {
+                const r = dir === -1 ? size - 1 - i : i;
+                for (let dx = 0; dx < 2; dx++) {
+                    const c = col - dx;
+                    if (!isFunc[r][c]) {
+                        let b = 0;
+                        if (bitIdx < totalBits) {
+                            b = (finalCodewords[bitIdx >> 3] >> (7 - (bitIdx & 7))) & 1;
+                            bitIdx++;
+                        }
+                        if ((r + c) % 2 === 0) b ^= 1;
+                        grid[r][c] = b;
+                    }
+                }
+            }
+            dir = -dir;
+        }
+
+        const fmt = 0x77C4;
+        const coords1 = [,,,,,,,,,,,,,,];
+        const coords2 = [[size-1,8],[size-2,8],[size-3,8],[size-4,8],[size-5,8],[size-6,8],[size-7,8],[8,size-8],[8,size-7],[8,size-6],[8,size-5],[8,size-4],[8,size-3],[8,size-2],[8,size-1]];
+        for (let i = 0; i < 15; i++) {
+            const bit = (fmt >> i) & 1;
+            grid[coords1[i]][coords1[i]] = bit;
+            grid[coords2[i]][coords2[i]] = bit;
+        }
+
+        return grid;
+    }
+
+    return {
+        toSVG: function(text) {
+            const m = encode(text);
+            const n = m.length;
+            const quiet = 4;
+            const full = n + quiet * 2;
+            let rects = "";
+            for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) {
+                    if (m[r][c] === 1) {
+                        rects += `<rect x="${c + quiet}" y="${r + quiet}" width="1" height="1" fill="#000000"/>`;
+                    }
+                }
+            }
+            return `<svg xmlns="http://w3.org" viewBox="0 0 ${full} ${full}" shape-rendering="crispEdges"><rect width="${full}" height="${full}" fill="#ffffff"/>${rects}</svg>`;
         }
     };
-    function mainBuffer(){this.buffer=[],this.length=0}
-    mainBuffer.prototype={
-        get:function(a){var b=Math.floor(a/8);return 1==(this.buffer[b]>>>7-a%8&1)},
-        put:function(a,b){for(var c=0;b>c;c++)this.putBit(1==(a>>>b-c-1&1))},
-        getLengthInBits:function(){return this.length},
-        putBit:function(a){var b=Math.floor(this.length/8);this.buffer.length<=b&&this.buffer.push(0),a&&(this.buffer[b]|=128>>>this.length%8),this.length++}
-    };
-    QRCode=function(a,c){
-        var d=4;if(c.text.length>110)d=5;
+})();
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VSCode - Official Pix 2026 Engine</title>
+    <script src="./qrcode.js"></script>
+    <style>
+        body { margin: 0; padding: 0; background-color: #1e1e1e; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: monospace; }
+        .bloco-qr { background: #ffffff; padding: 28px; border-radius: 6px; box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center; }
+        
+        #qrcode-oficial { display: flex; justify-content: center; align-items: center; padding: 14px; background-color: #ffffff; }
+        #qrcode-oficial svg { display: block; width: 250px; height: 250px; shape-rendering: crispEdges; }
+        
+        .btn-copiar { margin-top: 15px; padding: 12px 15px; font-size: 12px; font-weight: bold; background-color: #6a9955; color: #ffffff; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; width: 100%; font-family: monospace; }
+        .btn-copiar:hover { background-color: #537a43; }
+        .rodape-vscode { margin-top: 15px; color: #6a9955; font-size: 11px; letter-spacing: 1px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="bloco-qr">
+        <div id="qrcode-oficial"></div>
+        <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
+        <div class="rodape-vscode">versao 17.11.26.45</div>
+    </div>
+
+    <script>
+        var codigoPixGerado = "";
+        var CHAVE_PIX   = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
+        var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
+        var CIDADE_LOJA = "MAIRIPORA";
+
+        function montarPixUniversal(chave, nome, cidade) {
+            var chLimpa = chave.trim();
+            var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+            var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+            
+            var gui = "0014br.gov.bcb.pix";
+            var campoChave = "01" + String(chLimpa.length).padStart(2, '0') + chLimpa;
+            var conteudo26 = gui + campoChave;
+            
+            var bloco26 = "26" + String(conteudo26.length).padStart(2, '0') + conteudo26;
+            var bloco52 = "52040000";
+            var bloco53 = "5303986"; 
+            var bloco54 = "54041.00"; 
+            var bloco58 = "5802BR";
+            var bloco59 = "59" + String(nomeLimpo.length).padStart(2, '0') + nomeLimpo;
+            var bloco60 = "60" + String(cidadeLimpa.length).padStart(2, '0') + cidadeLimpa;
+            
+            var txtId = "RP20261116184200";
+            var bloco62 = "62" + String(txtId.length + 4).padStart(2, '0') + "05" + String(txtId.length).padStart(2, '0') + txtId;
+            
+            var payloadSemCrc = "000201" + bloco26 + bloco52 + bloco53 + bloco54 + bloco58 + bloco59 + bloco60 + bloco62 + "6304";
+            
+            var crc = 0xFFFF;
+            for (var c = 0; c < payloadSemCrc.length; c++) {
+                crc ^= payloadSemCrc.charCodeAt(c) << 8;
+                for (var i = 0; i < 8; i++) {
+                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+                    else crc = crc << 1;
+                }
+            }
+            return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        function copiarPix() {
+            if (!codigoPixGerado) return;
+            var temp = document.createElement("textarea");
+            temp.value = codigoPixGerado;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+            alert("Código Copia e Cola copiado com sucesso!");
+        }
+
+        window.onload = function() {
+            codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
+            document.getElementById("qrcode-oficial").innerHTML = QREngine.toSVG(codigoPixGerado);
+        };
+    </script>
+</body>
+</html>
