@@ -1,4 +1,4 @@
-/* qrcode.js - Motor Oficial SVG Pix 2026 (JCS Software) */
+/* qrcode.js - Motor Oficial SVG Pix 2026 (JCS Software - Corrigido) */
 const QREngine = (function() {
     const EXP = new Uint8Array(256), LOG = new Uint8Array(256);
     let x = 1;
@@ -20,7 +20,7 @@ const QREngine = (function() {
     }
 
     function rsGenPoly(nsym) {
-        let g = new Uint8Array();
+        let g = new Uint8Array([1]);
         for (let i = 0; i < nsym; i++) {
             g = polyMul(g, new Uint8Array([1, EXP[i]]));
         }
@@ -42,19 +42,18 @@ const QREngine = (function() {
         return res.slice(data.length);
     }
 
-    const VERSIONS = [
-        null,
-        { total: 26,  data: 19,  ec: 7,  blocks: [], align: [] },
-        { total: 44,  data: 34,  ec: 10, blocks: [], align: },
-        { total: 70,  data: 55,  ec: 15, blocks: [], align: },
-        { total: 100, data: 80,  ec: 20, blocks: [], align: },
-        { total: 134, data: 108, ec: 26, blocks: [], align: },
-        { total: 172, data: 136, ec: 18, blocks: [], align: },
-        { total: 196, data: 156, ec: 20, blocks: [], align: },
-        { total: 242, data: 194, ec: 24, blocks: [], align: },
-        { total: 292, data: 232, ec: 30, blocks: [], align: },
-        { total: 346, data: 274, ec: 18, blocks: [,], align: }
-    ];
+    const VERSIONS = {
+        1:  { data: 19,  ec: 7,  b1c: 1, b1d: 19,  b2c: 0, b2d: 0,  align: [] },
+        2:  { data: 34,  ec: 10, b1c: 1, b1d: 34,  b2c: 0, b2d: 0,  align: [6, 18] },
+        3:  { data: 55,  ec: 15, b1c: 1, b1d: 55,  b2c: 0, b2d: 0,  align: [6, 22] },
+        4:  { data: 80,  ec: 20, b1c: 1, b1d: 80,  b2c: 0, b2d: 0,  align: [6, 26] },
+        5:  { data: 108, ec: 26, b1c: 1, b1d: 108, b2c: 0, b2d: 0,  align: [6, 30] },
+        6:  { data: 136, ec: 18, b1c: 2, b1d: 68,  b2c: 0, b2d: 0,  align: [6, 34] },
+        7:  { data: 156, ec: 20, b1c: 2, b1d: 78,  b2c: 0, b2d: 0,  align: [6, 22, 38] },
+        8:  { data: 194, ec: 24, b1c: 2, b1d: 97,  b2c: 0, b2d: 0,  align: [6, 24, 42] },
+        9:  { data: 232, ec: 30, b1c: 2, b1d: 116, b2c: 0, b2d: 0,  align: [6, 26, 46] },
+        10: { data: 274, ec: 18, b1c: 2, b1d: 68,  b2c: 2, b2d: 69, align: [6, 28, 50] }
+    };
 
     function encode(text) {
         const bytes = new TextEncoder().encode(text);
@@ -70,9 +69,9 @@ const QREngine = (function() {
         const pushBits = (val, len) => {
             for (let i = len - 1; i >= 0; i--) bits.push((val >> i) & 1);
         };
-        pushBits(0b0100, 4);
+        pushBits(4, 4);
         pushBits(bytes.length, ver < 10 ? 8 : 16);
-        for (const b of bytes) pushBits(b, 8);
+        for (let i = 0; i < bytes.length; i++) pushBits(bytes[i], 8);
         pushBits(0, Math.min(4, info.data * 8 - bits.length));
         while (bits.length % 8 !== 0) bits.push(0);
 
@@ -92,22 +91,30 @@ const QREngine = (function() {
 
         const dBlocks = [], eBlocks = [];
         let offset = 0;
-        for (const [count, dLen] of info.blocks) {
-            for (let c = 0; c < count; c++) {
-                const slice = dataBytes.slice(offset, offset + dLen);
-                offset += dLen;
-                dBlocks.push(slice);
-                eBlocks.push(rsEncode(slice, info.ec));
-            }
+        for (let c = 0; c < info.b1c; c++) {
+            const slice = dataBytes.slice(offset, offset + info.b1d);
+            offset += info.b1d;
+            dBlocks.push(slice);
+            eBlocks.push(rsEncode(slice, info.ec));
+        }
+        for (let c = 0; c < info.b2c; c++) {
+            const slice = dataBytes.slice(offset, offset + info.b2d);
+            offset += info.b2d;
+            dBlocks.push(slice);
+            eBlocks.push(rsEncode(slice, info.ec));
         }
 
         const finalCodewords = [];
-        const maxD = Math.max(...dBlocks.map(b => b.length));
+        const maxD = Math.max(info.b1d, info.b2d);
         for (let i = 0; i < maxD; i++) {
-            for (const b of dBlocks) if (i < b.length) finalCodewords.push(b[i]);
+            for (let b = 0; b < dBlocks.length; b++) {
+                if (i < dBlocks[b].length) finalCodewords.push(dBlocks[b][i]);
+            }
         }
         for (let i = 0; i < info.ec; i++) {
-            for (const b of eBlocks) finalCodewords.push(b[i]);
+            for (let b = 0; b < eBlocks.length; b++) {
+                finalCodewords.push(eBlocks[b][i]);
+            }
         }
 
         const grid = Array.from({ length: size }, () => Array(size).fill(null));
@@ -153,8 +160,8 @@ const QREngine = (function() {
         }
 
         for (let i = 0; i < 9; i++) {
-            if (!isFunc[i]) setFunc(8, i, 0);
-            if (!isFunc[i]) setFunc(i, 8, 0);
+            if (!isFunc[8][i]) setFunc(8, i, 0);
+            if (!isFunc[i][8]) setFunc(i, 8, 0);
         }
         for (let i = 0; i < 8; i++) {
             setFunc(8, size - 1 - i, 0);
@@ -197,12 +204,14 @@ const QREngine = (function() {
         }
 
         const fmt = 0x77C4;
-        const coords1 = [,,,,,,,,,,,,,,];
-        const coords2 = [[size-1,8],[size-2,8],[size-3,8],[size-4,8],[size-5,8],[size-6,8],[size-7,8],[8,size-8],[8,size-7],[8,size-6],[8,size-5],[8,size-4],[8,size-3],[8,size-2],[8,size-1]];
+        const r1 =;
+        const c1 =;
+        const r2 = [size-1, size-2, size-3, size-4, size-5, size-6, size-7, 8, 8, 8, 8, 8, 8, 8, 8];
+        const c2 = [8, 8, 8, 8, 8, 8, 8, size-8, size-7, size-6, size-5, size-4, size-3, size-2, size-1];
         for (let i = 0; i < 15; i++) {
             const bit = (fmt >> i) & 1;
-            grid[coords1[i]][coords1[i]] = bit;
-            grid[coords2[i]][coords2[i]] = bit;
+            grid[r1[i]][c1[i]] = bit;
+            grid[r2[i]][c2[i]] = bit;
         }
 
         return grid;
@@ -226,86 +235,3 @@ const QREngine = (function() {
         }
     };
 })();
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VSCode - Official Pix 2026 Engine</title>
-    <script src="./qrcode.js"></script>
-    <style>
-        body { margin: 0; padding: 0; background-color: #1e1e1e; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: monospace; }
-        .bloco-qr { background: #ffffff; padding: 28px; border-radius: 6px; box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center; }
-        
-        #qrcode-oficial { display: flex; justify-content: center; align-items: center; padding: 14px; background-color: #ffffff; }
-        #qrcode-oficial svg { display: block; width: 250px; height: 250px; shape-rendering: crispEdges; }
-        
-        .btn-copiar { margin-top: 15px; padding: 12px 15px; font-size: 12px; font-weight: bold; background-color: #6a9955; color: #ffffff; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; width: 100%; font-family: monospace; }
-        .btn-copiar:hover { background-color: #537a43; }
-        .rodape-vscode { margin-top: 15px; color: #6a9955; font-size: 11px; letter-spacing: 1px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="bloco-qr">
-        <div id="qrcode-oficial"></div>
-        <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-vscode">versao 17.11.26.45</div>
-    </div>
-
-    <script>
-        var codigoPixGerado = "";
-        var CHAVE_PIX   = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
-        var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
-        var CIDADE_LOJA = "MAIRIPORA";
-
-        function montarPixUniversal(chave, nome, cidade) {
-            var chLimpa = chave.trim();
-            var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
-            var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
-            
-            var gui = "0014br.gov.bcb.pix";
-            var campoChave = "01" + String(chLimpa.length).padStart(2, '0') + chLimpa;
-            var conteudo26 = gui + campoChave;
-            
-            var bloco26 = "26" + String(conteudo26.length).padStart(2, '0') + conteudo26;
-            var bloco52 = "52040000";
-            var bloco53 = "5303986"; 
-            var bloco54 = "54041.00"; 
-            var bloco58 = "5802BR";
-            var bloco59 = "59" + String(nomeLimpo.length).padStart(2, '0') + nomeLimpo;
-            var bloco60 = "60" + String(cidadeLimpa.length).padStart(2, '0') + cidadeLimpa;
-            
-            var txtId = "RP20261116184200";
-            var bloco62 = "62" + String(txtId.length + 4).padStart(2, '0') + "05" + String(txtId.length).padStart(2, '0') + txtId;
-            
-            var payloadSemCrc = "000201" + bloco26 + bloco52 + bloco53 + bloco54 + bloco58 + bloco59 + bloco60 + bloco62 + "6304";
-            
-            var crc = 0xFFFF;
-            for (var c = 0; c < payloadSemCrc.length; c++) {
-                crc ^= payloadSemCrc.charCodeAt(c) << 8;
-                for (var i = 0; i < 8; i++) {
-                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
-                    else crc = crc << 1;
-                }
-            }
-            return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-        }
-
-        function copiarPix() {
-            if (!codigoPixGerado) return;
-            var temp = document.createElement("textarea");
-            temp.value = codigoPixGerado;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand("copy");
-            document.body.removeChild(temp);
-            alert("Código Copia e Cola copiado com sucesso!");
-        }
-
-        window.onload = function() {
-            codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
-            document.getElementById("qrcode-oficial").innerHTML = QREngine.toSVG(codigoPixGerado);
-        };
-    </script>
-</body>
-</html>
