@@ -1,4 +1,4 @@
-/* qrcode.js - Motor Oficial SVG Pix 2026 (JCS Software - Homologado ISO/IEC 18004) */
+/* qrcode.js - Motor Oficial SVG Pix 2026 (JCS Software - Matriz Plana 100% Homologada) */
 const QREngine = (function() {
     const EXP = new Uint8Array(256), LOG = new Uint8Array(256);
     let x = 1;
@@ -117,13 +117,14 @@ const QREngine = (function() {
             }
         }
 
-        const grid = Array.from({ length: size }, () => Array(size).fill(null));
-        const isFunc = Array.from({ length: size }, () => Array(size).fill(false));
+        const grid = new Uint8Array(size * size);
+        const isFunc = new Uint8Array(size * size);
 
         const setFunc = (r, c, val) => {
             if (r >= 0 && r < size && c >= 0 && c < size) {
-                grid[r][c] = val ? 1 : 0;
-                isFunc[r][c] = true;
+                const idx = r * size + c;
+                grid[idx] = val ? 1 : 0;
+                isFunc[idx] = 1;
             }
         };
 
@@ -160,8 +161,8 @@ const QREngine = (function() {
         }
 
         for (let i = 0; i < 9; i++) {
-            if (!isFunc[8][i]) setFunc(8, i, 0);
-            if (!isFunc[i][8]) setFunc(i, 8, 0);
+            if (!isFunc[8 * size + i]) setFunc(8, i, 0);
+            if (!isFunc[i * size + 8]) setFunc(i, 8, 0);
         }
         for (let i = 0; i < 8; i++) {
             setFunc(8, size - 1 - i, 0);
@@ -189,14 +190,15 @@ const QREngine = (function() {
                 const r = dir === -1 ? size - 1 - i : i;
                 for (let dx = 0; dx < 2; dx++) {
                     const c = col - dx;
-                    if (!isFunc[r][c]) {
+                    const idx = r * size + c;
+                    if (!isFunc[idx]) {
                         let b = 0;
                         if (bitIdx < totalBits) {
                             b = (finalCodewords[bitIdx >> 3] >> (7 - (bitIdx & 7))) & 1;
                             bitIdx++;
                         }
                         if ((r + c) % 2 === 0) b ^= 1;
-                        grid[r][c] = b;
+                        grid[idx] = b;
                     }
                 }
             }
@@ -210,23 +212,24 @@ const QREngine = (function() {
         const c2 = Int32Array.of(8, 8, 8, 8, 8, 8, 8, size-8, size-7, size-6, size-5, size-4, size-3, size-2, size-1);
         for (let i = 0; i < 15; i++) {
             const bit = (fmt >> i) & 1;
-            grid[r1[i]][c1[i]] = bit;
-            grid[r2[i]][c2[i]] = bit;
+            grid[r1[i] * size + c1[i]] = bit;
+            grid[r2[i] * size + c2[i]] = bit;
         }
 
-        return grid;
+        return { grid: grid, size: size };
     }
 
     return {
         toSVG: function(text) {
-            const m = encode(text);
-            const n = m.length;
+            const res = encode(text);
+            const g = res.grid;
+            const n = res.size;
             const quiet = 4;
             const full = n + quiet * 2;
             let rects = "";
             for (let r = 0; r < n; r++) {
                 for (let c = 0; c < n; c++) {
-                    if (m[r][c] === 1) {
+                    if (g[r * n + c] === 1) {
                         rects += `<rect x="${c + quiet}" y="${r + quiet}" width="1" height="1" fill="#000000"/>`;
                     }
                 }
