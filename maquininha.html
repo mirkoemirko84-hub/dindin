@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dindin POS • JCS Software</title>
+    <script src="./qrcode.js"></script>
     <script src="./protecao.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, monospace, sans-serif; }
@@ -18,7 +19,7 @@
             align-items: center;
         }
 
-        /* Carcaça da Maquininha ajustada para caber inteira na tela (~88% de escala) */
+        /* Carcaça da Maquininha ajustada para caber inteira na tela */
         .maquininha {
             width: 320px;
             background: linear-gradient(145deg, #2b2f36, #1b1e23);
@@ -34,7 +35,6 @@
             transform-origin: center center;
         }
 
-        /* Saída superior de bobina / leitor NFC */
         .topo-nfc {
             width: 100px;
             height: 5px;
@@ -56,7 +56,6 @@
             box-shadow: 0 0 8px #00e676;
         }
 
-        /* Tela Touch da Maquininha */
         .tela-pos {
             background: #f4f7f6;
             border-radius: 16px;
@@ -68,7 +67,6 @@
             align-items: center;
         }
 
-        /* Cabeçalho da Tela */
         .header-tela {
             width: 100%;
             display: flex;
@@ -95,7 +93,6 @@
             border-radius: 12px;
         }
 
-        /* Visor de Valor */
         .visor-valor {
             width: 100%;
             background: #ffffff;
@@ -122,12 +119,12 @@
             font-family: monospace;
         }
 
-        /* Área reservada para o QR Code */
+        /* Área do QR Code dentro da tela */
         .moldura-qr {
             width: 195px;
             height: 195px;
             background: #ffffff;
-            border: 2px dashed #94a3b8;
+            border: 2px solid #cbd5e1;
             border-radius: 12px;
             display: flex;
             flex-direction: column;
@@ -136,11 +133,17 @@
             color: #64748b;
             font-size: 12px;
             text-align: center;
-            padding: 10px;
+            padding: 8px;
             margin-bottom: 10px;
         }
 
-        /* Botão principal na tela */
+        .moldura-qr svg {
+            display: block;
+            width: 175px;
+            height: 175px;
+            shape-rendering: crispEdges;
+        }
+
         .btn-tela-copiar {
             width: 100%;
             padding: 10px;
@@ -158,7 +161,6 @@
 
         .btn-tela-copiar:hover { background: #08523b; }
 
-        /* Teclado físico rápido abaixo da tela */
         .teclado-fisico {
             margin-top: 12px;
             display: grid;
@@ -187,7 +189,6 @@
         .tecla-limpar { background: #7f1d1d; border-color: #991b1b; color: #fecaca; }
         .tecla-ok { background: #0b6e4f; border-color: #059669; color: #ffffff; }
 
-        /* Marca JCS na base da carcaça */
         .rodape-carcaca {
             text-align: center;
             margin-top: 12px;
@@ -218,11 +219,11 @@
             </div>
 
             <div class="moldura-qr" id="area-qr">
-                <span>[ ÁREA DO QR CODE ]</span>
-                <small style="margin-top:6px; font-size:10px;">Digite o valor no teclado e aperte OK</small>
+                <span>Digite o valor no teclado</span>
+                <small style="margin-top:6px; font-size:10px;">e aperte <strong>OK</strong> para gerar</small>
             </div>
 
-            <button class="btn-tela-copiar">📋 Copiar Código Pix</button>
+            <button class="btn-tela-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
         </div>
 
         <div class="teclado-fisico">
@@ -244,7 +245,66 @@
     </div>
 
     <script>
+        // =========================================================================
+        // CONFIGURAÇÃO DA CHAVE PIX (Deixe apenas UMA linha ativa sem // na frente)
+        // =========================================================================
+
+        // 1. CHAVE ALEATÓRIA (Ativa no momento)
+        var CHAVE_PIX = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
+
+        // 2. CNPJ (Somente números - ex: para o seu amigo Rodrigo)
+        // var CHAVE_PIX = "00000000000199";
+
+        // 3. CPF (Somente os 11 números, sem pontos ou traço)
+        // var CHAVE_PIX = "00000000000";
+
+        // 4. CELULAR (Obrigatório colocar +55 + DDD + número)
+        // var CHAVE_PIX = "+5511999999999";
+
+        // 5. E-MAIL (Tudo em letras minúsculas)
+        // var CHAVE_PIX = "seuemail@dominio.com.br";
+
+        // =========================================================================
+        // DADOS DO RECEBEDOR (Aparece no comprovante do cliente)
+        // =========================================================================
+        var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
+        var CIDADE_LOJA = "MAIRIPORA";
+
         var centavos = "";
+        var codigoPixGerado = "";
+
+        function montarPixUniversal(chave, nome, cidade, valorFormatado) {
+            var chLimpa = chave.trim();
+            var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+            var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+            
+            var gui = "0014br.gov.bcb.pix";
+            var campoChave = "01" + String(chLimpa.length).padStart(2, '0') + chLimpa;
+            var conteudo26 = gui + campoChave;
+            
+            var bloco26 = "26" + String(conteudo26.length).padStart(2, '0') + conteudo26;
+            var bloco52 = "52040000";
+            var bloco53 = "5303986"; 
+            var bloco54 = "54" + String(valorFormatado.length).padStart(2, '0') + valorFormatado; 
+            var bloco58 = "5802BR";
+            var bloco59 = "59" + String(nomeLimpo.length).padStart(2, '0') + nomeLimpo;
+            var bloco60 = "60" + String(cidadeLimpa.length).padStart(2, '0') + cidadeLimpa;
+            
+                        var txtId = "RP20261116184200";
+            var bloco62 = "62" + String(txtId.length + 4).padStart(2, '0') + "05" + String(txtId.length).padStart(2, '0') + txtId;
+            
+            var payloadSemCrc = "000201" + bloco26 + bloco52 + bloco53 + bloco54 + bloco58 + bloco59 + bloco60 + bloco62 + "6304";
+            
+            var crc = 0xFFFF;
+            for (var c = 0; c < payloadSemCrc.length; c++) {
+                crc ^= payloadSemCrc.charCodeAt(c) << 8;
+                for (var i = 0; i < 8; i++) {
+                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+                    else crc = crc << 1;
+                }
+            }
+            return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        }
 
         function atualizarVisor() {
             if (centavos === "") {
@@ -264,14 +324,43 @@
 
         function limpar() {
             centavos = "";
+            codigoPixGerado = "";
             atualizarVisor();
-            document.getElementById("area-qr").innerHTML = '<span>[ ÁREA DO QR CODE ]</span><small style="margin-top:6px; font-size:10px;">Digite o valor no teclado e aperte OK</small>';
+            document.getElementById("area-qr").innerHTML = '<span>Digite o valor no teclado</span><small style="margin-top:6px; font-size:10px;">e aperte <strong>OK</strong> para gerar</small>';
         }
 
         function confirmar() {
-            var valorTexto = document.getElementById("visor").innerText;
-            document.getElementById("area-qr").innerHTML = '<strong style="color:#0b6e4f;">QR CODE PRONTO</strong><small style="margin-top:6px;">Valor: ' + valorTexto + '</small>';
+            if (centavos === "" || parseInt(centavos, 10) <= 0) {
+                alert("Digite um valor maior que zero no teclado.");
+                return;
+            }
+            var num = parseInt(centavos, 10) / 100;
+            var valorPadraoPix = num.toFixed(2);
+
+            codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA, valorPadraoPix);
+            document.getElementById("area-qr").innerHTML = QREngine.toSVG(codigoPixGerado);
+        }
+
+        function copiarPix() {
+            if (!codigoPixGerado) {
+                alert("Digite o valor e aperte OK primeiro.");
+                return;
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(codigoPixGerado).then(function() {
+                    alert("Código Copia e Cola copiado com sucesso!");
+                });
+            } else {
+                var temp = document.createElement("textarea");
+                temp.value = codigoPixGerado;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand("copy");
+                document.body.removeChild(temp);
+                alert("Código Copia e Cola copiado com sucesso!");
+            }
         }
     </script>
 </body>
 </html>
+
