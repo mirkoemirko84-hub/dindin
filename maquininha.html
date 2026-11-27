@@ -244,75 +244,32 @@
         <div class="rodape-carcaca">JCS SOFTWARE • POS</div>
     </div>
 
-        <script>
-        // =========================================================================
-        // CONFIGURAÇÃO DA CHAVE PIX (Deixe apenas UMA linha ativa sem // na frente)
-        // =========================================================================
-
-        // 1. CHAVE ALEATÓRIA (Ativa no momento)
+            <script src="./qrcode.js"></script>
+    <script>
+        // 1. CHAVE ALEATORIA (Ativa)
         var CHAVE_PIX = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
-
-        // 2. CNPJ (Somente números - ex: para o seu amigo Rodrigo)
+        // 2. CNPJ:
         // var CHAVE_PIX = "00000000000199";
-
-        // 3. CPF (Somente os 11 números, sem pontos ou traço)
+        // 3. CPF:
         // var CHAVE_PIX = "00000000000";
-
-        // 4. CELULAR (Obrigatório colocar +55 + DDD + número)
+        // 4. CELULAR:
         // var CHAVE_PIX = "+5511999999999";
-
-        // 5. E-MAIL (Tudo em letras minúsculas)
+        // 5. E-MAIL:
         // var CHAVE_PIX = "seuemail@dominio.com.br";
 
-        // =========================================================================
-        // DADOS DO RECEBEDOR
-        // =========================================================================
-        var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
+        var NOME_LOJA = "JOSE CARLOS SUGUIMOTO";
         var CIDADE_LOJA = "MAIRIPORA";
-
         var centavos = "";
         var codigoPixGerado = "";
 
-        function montarPixUniversal(chave, nome, cidade, valorFormatado) {
-            var chLimpa = chave.trim();
-            var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
-            var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
-            
-            var gui = "0014br.gov.bcb.pix";
-            var campoChave = "01" + String(chLimpa.length).padStart(2, '0') + chLimpa;
-            var conteudo26 = gui + campoChave;
-            
-            var bloco26 = "26" + String(conteudo26.length).padStart(2, '0') + conteudo26;
-            var bloco52 = "52040000";
-            var bloco53 = "5303986"; 
-            var bloco54 = "54" + String(valorFormatado.length).padStart(2, '0') + valorFormatado; 
-            var bloco58 = "5802BR";
-            var bloco59 = "59" + String(nomeLimpo.length).padStart(2, '0') + nomeLimpo;
-            var bloco60 = "60" + String(cidadeLimpa.length).padStart(2, '0') + cidadeLimpa;
-            
-            var txtId = "RP20261116184200";
-            var bloco62 = "62" + String(txtId.length + 4).padStart(2, '0') + "05" + String(txtId.length).padStart(2, '0') + txtId;
-            
-            var payloadSemCrc = "000201" + bloco26 + bloco52 + bloco53 + bloco54 + bloco58 + bloco59 + bloco60 + bloco62 + "6304";
-            
-            var crc = 0xFFFF;
-            for (var c = 0; c < payloadSemCrc.length; c++) {
-                crc ^= payloadSemCrc.charCodeAt(c) << 8;
-                for (var i = 0; i < 8; i++) {
-                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
-                    else crc = crc << 1;
-                }
-            }
-            return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-        }
-
         function atualizarVisor() {
+            var visor = document.getElementById("visor");
             if (centavos === "") {
-                document.getElementById("visor").innerText = "R$ 0,00";
+                visor.innerText = "R$ 0,00";
                 return;
             }
             var num = parseInt(centavos, 10) / 100;
-            document.getElementById("visor").innerText = "R$ " + num.toFixed(2).replace(".", ",");
+            visor.innerText = "R$ " + num.toFixed(2).replace(".", ",");
         }
 
         function digitar(d) {
@@ -329,6 +286,34 @@
             document.getElementById("area-qr").innerHTML = '<span>Digite o valor no teclado</span><small style="margin-top:6px; font-size:10px;">e aperte <strong>OK</strong> para gerar</small>';
         }
 
+        function montarPixUniversal(chave, nome, cidade, valorFormatado) {
+            var chLimpa = chave.trim();
+            var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
+            var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
+            var gui = "0014br.gov.bcb.pix";
+            var campoChave = "01" + String(chLimpa.length).padStart(2, '0') + chLimpa;
+            var conteudo26 = gui + campoChave;
+            var bloco26 = "26" + String(conteudo26.length).padStart(2, '0') + conteudo26;
+            var bloco52 = "52040000";
+            var bloco53 = "5303986";
+            var bloco54 = "54" + String(valorFormatado.length).padStart(2, '0') + valorFormatado;
+            var bloco58 = "5802BR";
+            var bloco59 = "59" + String(nomeLimpo.length).padStart(2, '0') + nomeLimpo;
+            var bloco60 = "60" + String(cidadeLimpa.length).padStart(2, '0') + cidadeLimpa;
+            var txtId = "RP20261116184200";
+            var bloco62 = "62" + String(txtId.length + 4).padStart(2, '0') + "05" + String(txtId.length).padStart(2, '0') + txtId;
+            var payloadSemCrc = "000201" + bloco26 + bloco52 + bloco53 + bloco54 + bloco58 + bloco59 + bloco60 + bloco62 + "6304";
+            var crc = 0xFFFF;
+            for (var c = 0; c < payloadSemCrc.length; c++) {
+                crc ^= payloadSemCrc.charCodeAt(c) << 8;
+                for (var i = 0; i < 8; i++) {
+                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+                    else crc = crc << 1;
+                }
+            }
+            return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        }
+
         function confirmar() {
             if (centavos === "" || parseInt(centavos, 10) <= 0) {
                 alert("Digite um valor maior que zero no teclado.");
@@ -336,7 +321,6 @@
             }
             var num = parseInt(centavos, 10) / 100;
             var valorPadraoPix = num.toFixed(2);
-
             codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA, valorPadraoPix);
             document.getElementById("area-qr").innerHTML = QREngine.toSVG(codigoPixGerado);
         }
@@ -348,7 +332,7 @@
             }
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(codigoPixGerado).then(function() {
-                    alert("Código Copia e Cola copiado com sucesso!");
+                    alert("Codigo Copia e Cola copiado!");
                 });
             } else {
                 var temp = document.createElement("textarea");
@@ -357,10 +341,11 @@
                 temp.select();
                 document.execCommand("copy");
                 document.body.removeChild(temp);
-                alert("Código Copia e Cola copiado com sucesso!");
+                alert("Codigo Copia e Cola copiado!");
             }
         }
     </script>
 </body>
 </html>
 
+       
