@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-       <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VSCode - Official Pix 2026 Engine</title>
     <script src="./qrcode.js"></script>
     <script src="./protecao.js"></script>
     <style>
-
         body { margin: 0; padding: 0; background-color: #1e1e1e; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; font-family: monospace; }
-        .bloco-qr { background: #ffffff; padding: 28px; border-radius: 6px; box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center; }
+        .bloco-qr { background: #ffffff; padding: 28px; border-radius: 6px; box-shadow: 0 0 30px rgba(0,0,0,0.5); text-align: center; width: 290px; }
         
-        #qrcode-oficial { display: flex; justify-content: center; align-items: center; padding: 14px; background-color: #ffffff; }
+        .grupo-valor { display: flex; gap: 6px; margin-bottom: 10px; }
+        .input-valor { flex: 1; padding: 10px; font-size: 16px; font-weight: bold; border: 2px solid #ccc; border-radius: 4px; text-align: right; font-family: monospace; outline: none; color: #1e1e1e; }
+        .input-valor:focus { border-color: #6a9955; }
+        
+        .btn-gerar { padding: 10px 14px; font-size: 12px; font-weight: bold; background-color: #007acc; color: #ffffff; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; font-family: monospace; }
+        .btn-gerar:hover { background-color: #005f9e; }
+
+        #qrcode-oficial { display: flex; justify-content: center; align-items: center; padding: 14px; background-color: #ffffff; min-height: 250px; }
         #qrcode-oficial svg { display: block; width: 250px; height: 250px; shape-rendering: crispEdges; }
         
         .btn-copiar { margin-top: 15px; padding: 12px 15px; font-size: 12px; font-weight: bold; background-color: #6a9955; color: #ffffff; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; width: 100%; font-family: monospace; }
@@ -21,9 +27,14 @@
 </head>
 <body>
     <div class="bloco-qr">
+        <div class="grupo-valor">
+            <input type="text" id="campo-valor" class="input-valor" value="1,00" placeholder="0,00" inputmode="decimal" onkeyup="if(event.key==='Enter') atualizarPix()">
+            <button class="btn-gerar" onclick="atualizarPix()">Gerar</button>
+        </div>
+
         <div id="qrcode-oficial"></div>
         <button class="btn-copiar" onclick="copiarPix()">📋 Copiar Código Pix</button>
-        <div class="rodape-vscode">versao 17.11.26.45</div>
+        <div class="rodape-vscode">versao 27.11.26.01</div>
     </div>
 
     <script>
@@ -31,7 +42,8 @@
         var CHAVE_PIX   = "3d4ee862-439d-481d-9f5b-07d69a7182f6";
         var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
         var CIDADE_LOJA = "MAIRIPORA";
-        function montarPixUniversal(chave, nome, cidade) {
+
+        function montarPixUniversal(chave, nome, cidade, valorFormatado) {
             var chLimpa = chave.trim();
             var nomeLimpo = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 25);
             var cidadeLimpa = cidade.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().substring(0, 15);
@@ -43,7 +55,7 @@
             var bloco26 = "26" + String(conteudo26.length).padStart(2, '0') + conteudo26;
             var bloco52 = "52040000";
             var bloco53 = "5303986"; 
-            var bloco54 = "54041.00"; 
+            var bloco54 = "54" + String(valorFormatado.length).padStart(2, '0') + valorFormatado; 
             var bloco58 = "5802BR";
             var bloco59 = "59" + String(nomeLimpo.length).padStart(2, '0') + nomeLimpo;
             var bloco60 = "60" + String(cidadeLimpa.length).padStart(2, '0') + cidadeLimpa;
@@ -64,20 +76,43 @@
             return payloadSemCrc + (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
         }
 
+        function atualizarPix() {
+            var campo = document.getElementById("campo-valor");
+            var texto = campo.value.trim().replace(",", ".");
+            var numero = parseFloat(texto);
+
+            if (isNaN(numero) || numero <= 0) {
+                alert("Digite um valor válido maior que zero.");
+                campo.focus();
+                return;
+            }
+
+            var valorPadraoPix = numero.toFixed(2);
+            campo.value = valorPadraoPix.replace(".", ",");
+
+            codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA, valorPadraoPix);
+            document.getElementById("qrcode-oficial").innerHTML = QREngine.toSVG(codigoPixGerado);
+        }
+
         function copiarPix() {
             if (!codigoPixGerado) return;
-            var temp = document.createElement("textarea");
-            temp.value = codigoPixGerado;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand("copy");
-            document.body.removeChild(temp);
-            alert("Código Copia e Cola copiado com sucesso!");
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(codigoPixGerado).then(function() {
+                    alert("Código Copia e Cola copiado com sucesso!");
+                });
+            } else {
+                var temp = document.createElement("textarea");
+                temp.value = codigoPixGerado;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand("copy");
+                document.body.removeChild(temp);
+                alert("Código Copia e Cola copiado com sucesso!");
+            }
         }
 
         window.onload = function() {
-            codigoPixGerado = montarPixUniversal(CHAVE_PIX, NOME_LOJA, CIDADE_LOJA);
-            document.getElementById("qrcode-oficial").innerHTML = QREngine.toSVG(codigoPixGerado);
+            atualizarPix();
         };
     </script>
 </body>
