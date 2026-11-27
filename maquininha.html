@@ -1,1 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dindin POS • JCS Software</title>
+    <script src="./protecao.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, monospace, sans-serif; }
+        
+        body {
+            background: radial-gradient(circle at center, #262b30 0%, #121417 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
+        /* Carcaça da Maquininha Smart POS */
+        .maquininha {
+            width: 340px;
+            background: linear-gradient(145deg, #2b2f36, #1b1e23);
+            border-radius: 32px;
+            padding: 18px 18px 24px 18px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.75),
+                inset 0 2px 3px rgba(255, 255, 255, 0.15),
+                inset 0 -4px 8px rgba(0, 0, 0, 0.6);
+            border: 2px solid #343a42;
+            position: relative;
+        }
+
+        /* Saída superior de bobina / leitor NFC */
+        .topo-nfc {
+            width: 110px;
+            height: 6px;
+            background: #111316;
+            border-radius: 10px;
+            margin: 0 auto 14px auto;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .led-status {
+            width: 8px;
+            height: 8px;
+            background: #00e676;
+            border-radius: 50%;
+            position: absolute;
+            right: -22px;
+            top: -1px;
+            box-shadow: 0 0 8px #00e676;
+        }
+
+        /* Tela Touch da Maquininha */
+        .tela-pos {
+            background: #f4f7f6;
+            border-radius: 18px;
+            padding: 16px;
+            border: 3px solid #0f1114;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Cabeçalho da Tela */
+        .header-tela {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #dce3e0;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .marca-dindin {
+            font-weight: 800;
+            font-size: 16px;
+            color: #0b6e4f;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-pix {
+            background: #e0f2ec;
+            color: #0b6e4f;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+
+        /* Visor de Valor */
+        .visor-valor {
+            width: 100%;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            text-align: right;
+            margin-bottom: 14px;
+        }
+
+        .label-valor {
+            display: block;
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .numero-valor {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0f172a;
+            font-family: monospace;
+        }
+
+        /* Área reservada para o QR Code */
+        .moldura-qr {
+            width: 210px;
+            height: 210px;
+            background: #ffffff;
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #64748b;
+            font-size: 12px;
+            text-align: center;
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+
+        /* Botão principal na tela */
+        .btn-tela-copiar {
+            width: 100%;
+            padding: 11px;
+            background: #0b6e4f;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+
+        .btn-tela-copiar:hover { background: #08523b; }
+
+        /* Teclado físico rápido abaixo da tela */
+        .teclado-fisico {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .tecla {
+            background: #252930;
+            color: #e2e8f0;
+            border: 1px solid #3b424d;
+            border-radius: 8px;
+            padding: 10px 0;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #111317;
+            transition: transform 0.05s;
+        }
+
+        .tecla:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #111317;
+        }
+
+        .tecla-limpar { background: #7f1d1d; border-color: #991b1b; color: #fecaca; }
+        .tecla-ok { background: #0b6e4f; border-color: #059669; color: #ffffff; }
+
+        /* Marca JCS na base da carcaça */
+        .rodape-carcaca {
+            text-align: center;
+            margin-top: 16px;
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="maquininha">
+        <div class="topo-nfc">
+            <div class="led-status" title="Sistema Online"></div>
+        </div>
+
+        <div class="tela-pos">
+            <div class="header-tela">
+                <span class="marca-dindin">DINDIN</span>
+                <span class="badge-pix">PIX INSTANTÂNEO</span>
+            </div>
+
+            <div class="visor-valor">
+                <span class="label-valor">Valor a pagar</span>
+                <span class="numero-valor" id="visor">R$ 0,00</span>
+            </div>
+
+            <div class="moldura-qr" id="area-qr">
+                <span>[ ÁREA DO QR CODE ]</span>
+                <small style="margin-top:6px; font-size:10px;">Digite o valor no teclado e aperte OK</small>
+            </div>
+
+            <button class="btn-tela-copiar">📋 Copiar Código Pix</button>
+        </div>
+
+        <!-- Teclado estilo caixa eletrônico (digita os centavos direto) -->
+        <div class="teclado-fisico">
+            <button class="tecla" onclick="digitar('1')">1</button>
+            <button class="tecla" onclick="digitar('2')">2</button>
+            <button class="tecla" onclick="digitar('3')">3</button>
+            <button class="tecla" onclick="digitar('4')">4</button>
+            <button class="tecla" onclick="digitar('5')">5</button>
+            <button class="tecla" onclick="digitar('6')">6</button>
+            <button class="tecla" onclick="digitar('7')">7</button>
+            <button class="tecla" onclick="digitar('8')">8</button>
+            <button class="tecla" onclick="digitar('9')">9</button>
+            <button class="tecla tecla-limpar" onclick="limpar()">C</button>
+            <button class="tecla" onclick="digitar('0')">0</button>
+            <button class="tecla tecla-ok" onclick="confirmar()">OK</button>
+        </div>
+
+        <div class="rodape-carcaca">JCS SOFTWARE • POS</div>
+    </div>
+
+    <script>
+        var centavos = "";
+
+        function atualizarVisor() {
+            if (centavos === "") {
+                document.getElementById("visor").innerText = "R$ 0,00";
+                return;
+            }
+            var num = parseInt(centavos, 10) / 100;
+            document.getElementById("visor").innerText = "R$ " + num.toFixed(2).replace(".", ",");
+        }
+
+        function digitar(d) {
+            if (centavos.length >= 8) return;
+            if (centavos === "" && d === "0") return;
+            centavos += d;
+            atualizarVisor();
+        }
+
+        function limpar() {
+            centavos = "";
+            atualizarVisor();
+            document.getElementById("area-qr").innerHTML = '<span>[ ÁREA DO QR CODE ]</span><small style="margin-top:6px; font-size:10px;">Digite o valor no teclado e aperte OK</small>';
+        }
+
+        function confirmar() {
+            var valorTexto = document.getElementById("visor").innerText;
+            document.getElementById("area-qr").innerHTML = '<strong style="color:#0b6e4f;">QR CODE PRONTO</strong><small style="margin-top:6px;">Valor: ' + valorTexto + '</small>';
+        }
+    </script>
+</body>
+</html>
