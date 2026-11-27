@@ -244,7 +244,7 @@
         <div class="rodape-carcaca">JCS SOFTWARE • POS</div>
     </div>
 
-    <script>
+        <script>
         // =========================================================================
         // CONFIGURAÇÃO DA CHAVE PIX (Deixe apenas UMA linha ativa sem // na frente)
         // =========================================================================
@@ -265,7 +265,7 @@
         // var CHAVE_PIX = "seuemail@dominio.com.br";
 
         // =========================================================================
-        // DADOS DO RECEBEDOR (Aparece no comprovante do cliente)
+        // DADOS DO RECEBEDOR
         // =========================================================================
         var NOME_LOJA   = "JOSE CARLOS SUGUIMOTO";
         var CIDADE_LOJA = "MAIRIPORA";
@@ -290,7 +290,7 @@
             var bloco59 = "59" + String(nomeLimpo.length).padStart(2, '0') + nomeLimpo;
             var bloco60 = "60" + String(cidadeLimpa.length).padStart(2, '0') + cidadeLimpa;
             
-                        var txtId = "RP20261116184200";
+            var txtId = "RP20261116184200";
             var bloco62 = "62" + String(txtId.length + 4).padStart(2, '0') + "05" + String(txtId.length).padStart(2, '0') + txtId;
             
             var payloadSemCrc = "000201" + bloco26 + bloco52 + bloco53 + bloco54 + bloco58 + bloco59 + bloco60 + bloco62 + "6304";
